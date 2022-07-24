@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:medical_app/medical_home_screen.dart';
 import 'package:medical_app/sizeDevide.dart';

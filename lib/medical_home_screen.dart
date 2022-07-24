@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:medical_app/controller_time.dart';
+import 'package:medical_app/medical_class.dart';
 import 'package:medical_app/sizeDevide.dart';
+import 'package:toggle_switch/toggle_switch.dart';
+// import "package:threading/threading.dart";
 
-class MedicalHomeScreen extends StatelessWidget {
+class MedicalHomeScreen extends StatefulWidget {
   const MedicalHomeScreen({Key? key}) : super(key: key);
 
+  @override
+  State<MedicalHomeScreen> createState() => _MedicalHomeScreenState();
+}
+
+class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
+  bool _isVisibleGlucozo = false;
+  bool _isVisibleYesNoo = true;
+  int countInject = 0;
+  Medical medicalObject = Medical();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -14,8 +27,8 @@ class MedicalHomeScreen extends StatelessWidget {
         children: [
           Container(
             padding: EdgeInsets.only(bottom: 20, top: 20),
-            child: const Text(
-              'Phác đồ hiện tại: \n NUÔI DƯỠNG ĐƯỜNG TĨNH MẠCH ',
+            child: Text(
+              '${medicalObject.getNamePD}',
               style: TextStyle(
                   fontSize: 23, fontWeight: FontWeight.bold, height: 1.5),
               textAlign: TextAlign.center,
@@ -42,51 +55,130 @@ class MedicalHomeScreen extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: heightDevideMethod(0.015),
+                  top: 120,
                   left: 10,
                   child: Container(
+                    alignment: Alignment.topCenter,
                     width: widthDevideMethod(0.91),
-                    height: heightDevideMethod(0.25),
+                    padding: EdgeInsets.symmetric(vertical: 5),
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage("assets/bbchat1.png"),
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.fill,
                       ),
                     ),
-                    child: Container(
-                        alignment: Alignment.center,
-                        child: const Text(
-                            'Hello World')) /* add child content here */,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: heightDevideMethod(0.03)),
+
+                        //  Bạn có đang tiêm Insulin không ?
+                        Row(
+                          children: [
+                            Container(
+                              width: widthDevideMethod(0.04),
+                            ),
+                            Text(
+                              '${medicalObject.getContentdisplay}  ',
+                              style: TextStyle(fontSize: 16),
+                              textAlign: TextAlign.left,
+                            ),
+                            Container(
+                              padding: EdgeInsets.only(bottom: 8),
+                              alignment: Alignment.center,
+                              child: Visibility(
+                                visible: _isVisibleYesNoo,
+                                child: ToggleSwitch(
+                                  customWidths: [40.0, 50.0],
+                                  customHeights: [20, 20],
+                                  initialLabelIndex: 2,
+                                  cornerRadius: 20.0,
+                                  activeFgColor: Colors.white,
+                                  inactiveBgColor: Colors.grey,
+                                  inactiveFgColor: Colors.white,
+                                  totalSwitches: 2,
+                                  fontSize: 14,
+                                  labels: ['No', 'Yes'],
+                                  //Icons.backspace_rounded, Icons.add_task_rounded
+                                  // icons: [
+                                  //   Icons.backspace_rounded,
+                                  //   Icons.add_task_rounded
+                                  // ],
+                                  activeBgColors: [
+                                    [Colors.pink],
+                                    [Colors.green]
+                                  ],
+                                  onToggle: (index) async {
+                                    // DateTime now = DateTime.now();
+                                    // print("${now.hour} : ${now.minute}");
+
+                                    // bool flag = getCheckOpenCloseTimeStatus(
+                                    //     "1:31", "11:30");
+                                    // print('switched to: $index');
+                                    // print("check: ${flag}");
+                                    _isVisibleGlucozo = !_isVisibleGlucozo;
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 500), () {
+                                      setState(() {
+                                        _isVisibleYesNoo = false;
+                                        medicalObject.setInitialStateBool =
+                                            index == 0 ? true : false;
+                                        medicalObject.setStateInitial();
+                                        // var thread = new Thread(() async {
+                                        //   while (true) {
+                                        //     await Future.delayed(
+                                        //         const Duration(
+                                        //             milliseconds: 100), () {
+                                        //       setState(() {
+                                        //         medicalObject.setStateInitial();
+                                        //       });
+                                        //     });
+                                        //   }
+                                        // });
+                                      });
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Row(
-            children: [
-              SizedBox(width: widthDevideMethod(0.06)),
-              const Text(
-                'Nhập nồng độ glucozơ : ',
-                style: TextStyle(fontSize: 20),
-              ),
-              Container(
-                width: 80,
-                height: 40,
-                child: TextField(
-                  maxLength: 5,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
-                  ],
-                  decoration: InputDecoration(
-                    counter: Offstage(),
-                  ),
+          Visibility(
+            visible: _isVisibleGlucozo,
+            child: Row(
+              children: [
+                SizedBox(width: widthDevideMethod(0.06)),
+                const Text(
+                  'Nhập nồng độ glucozơ : ',
                   style: TextStyle(fontSize: 20),
                 ),
-              )
-            ],
+                Container(
+                  width: 80,
+                  height: 40,
+                  child: TextField(
+                    maxLength: 5,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
+                    ],
+                    decoration: InputDecoration(
+                      counter: Offstage(),
+                    ),
+                    style: TextStyle(fontSize: 20),
+                  ),
+                )
+              ],
+            ),
           ),
           SizedBox(height: heightDevideMethod(0.02)),
           Container(
