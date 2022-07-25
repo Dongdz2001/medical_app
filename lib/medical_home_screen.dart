@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medical_app/controller_time.dart';
+import 'package:medical_app/history_screen.dart';
 import 'package:medical_app/medical_class.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:toggle_switch/toggle_switch.dart';
-// import "package:threading/threading.dart";
+
+import 'package:toast/toast.dart';
 import "dart:async";
 
 class MedicalHomeScreen extends StatefulWidget {
@@ -17,11 +19,13 @@ class MedicalHomeScreen extends StatefulWidget {
 class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   bool _isVisibleGlucozo = false;
   bool _isVisibleYesNoo = true;
-  int countInject = 0;
+  bool _flagTimer = true;
   Medical medicalObject = Medical();
+  TextEditingController _editingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    ToastContext().init(context);
     return Container(
       padding: EdgeInsets.all(10),
       child: Column(
@@ -110,13 +114,13 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                     [Colors.pink],
                                     [Colors.green]
                                   ],
-                                  onToggle: (index) async {
+                                  onToggle: (index) {
                                     medicalObject.setTimeStart = DateTime.now()
                                         .toString()
-                                        .substring(0, 19);
+                                        .substring(0, 16);
                                     print(medicalObject.getTimeStart);
                                     _isVisibleGlucozo = !_isVisibleGlucozo;
-                                    await Future.delayed(
+                                    Future.delayed(
                                         const Duration(milliseconds: 500), () {
                                       setState(() {
                                         _isVisibleYesNoo = false;
@@ -125,9 +129,11 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                         medicalObject.setStateInitial();
                                         Timer timer = Timer.periodic(
                                             Duration(seconds: 10), (Timer t) {
-                                          setState(() {
-                                            medicalObject.setStateInitial();
-                                          });
+                                          if (_flagTimer) {
+                                            setState(() {
+                                              medicalObject.setStateInitial();
+                                            });
+                                          }
                                         });
                                       });
                                     });
@@ -157,6 +163,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   width: 80,
                   height: 40,
                   child: TextField(
+                    controller: _editingController,
                     maxLength: 5,
                     enableSuggestions: false,
                     autocorrect: false,
@@ -169,11 +176,21 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                       counter: Offstage(),
                     ),
                     style: TextStyle(fontSize: 20),
+                    onSubmitted: (value) {
+                      _logicStateInfomation(value);
+                    },
                   ),
                 ),
-                Icon(
-                  Icons.history,
-                  size: 30,
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              HistoryScreen(medical: medicalObject))),
+                  child: Icon(
+                    Icons.history,
+                    size: 30,
+                  ),
                 ),
               ],
             ),
@@ -189,5 +206,115 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _logicStateInfomation(String value) async {
+    setState(() {
+      medicalObject
+          .addItemListResultInjectionItem(double.parse(value.toString()));
+      _editingController.text = "";
+      Future.delayed(
+          Duration(seconds: 1),
+          (() => showToast(
+              "Nồng độ Glucozo ${value} ${medicalObject.getCheckGlucozo(double.parse(value.toString())) ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
+              duration: 3,
+              gravity: Toast.bottom)));
+      if (medicalObject.getCountInject() >= 4) {
+        if (medicalObject.getCheckPassInjection() == 0) {
+          // Trường hợp không tiêm Insulin không đạt mục tiêu
+          if (medicalObject.getInitialStateBool) {
+            // ko tiêm Insulin không đạt mục tiêu lần 1
+            if (medicalObject.getCountUsedSolve == 0) {
+              medicalObject.set_Content_State_Check_Gluco_Failed(
+                  medicalObject.getLastFaildedResultValue());
+              medicalObject.setContentdisplay =
+                  """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
+              medicalObject.upCountUsedSolve();
+              medicalObject.resetInjectionValueDefault();
+              Future.delayed(Duration(seconds: 10), (() {
+                setState(() {
+                  medicalObject.setStateInitial();
+                });
+              }));
+              // không tiêm Insulin không đạt mục tiêu lần 2
+            } else if (medicalObject.getCountUsedSolve == 1) {
+              medicalObject.setContentdisplay =
+                  "Phương án hiện tại không đạt yêu cầu \n chuyển sang 1 phương án khác !";
+              medicalObject.downCountUsedSolve();
+              medicalObject.setInitialStateBool =
+                  !medicalObject.getInitialStateBool;
+              medicalObject.resetInjectionValueDefault();
+              Future.delayed(Duration(seconds: 10), (() {
+                setState(() {
+                  medicalObject.setStateInitial();
+                });
+              }));
+            }
+          } else {
+            // Phương án tiêm insulin không đạt mục tiêu
+            if (!medicalObject.getLastStateBool) {
+              //  tiêm Insulin không đạt mục tiêu lần 1
+              if (medicalObject.getCountUsedSolve == 0) {
+                medicalObject.set_Content_State_Check_Gluco_Failed(
+                    medicalObject.getLastFaildedResultValue());
+                medicalObject.setContentdisplay =
+                    """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
+                medicalObject.upCountUsedSolve();
+
+                medicalObject.resetInjectionValueDefault();
+                Future.delayed(Duration(seconds: 10), (() {
+                  setState(() {
+                    medicalObject.setStateInitial();
+                  });
+                }));
+              } else if (medicalObject.getCountUsedSolve == 1) {
+                medicalObject.setContentdisplay =
+                    "Phương án hiện tại không đạt yêu cầu \n cần tăng liều Lantus lên 2UI !";
+                medicalObject.downCountUsedSolve();
+                medicalObject.setYInsu22H(2);
+                medicalObject.setLastStateBool = true;
+                medicalObject.resetInjectionValueDefault();
+                Future.delayed(Duration(seconds: 6), (() {
+                  setState(() {
+                    medicalObject.setStateInitial();
+                  });
+                }));
+              }
+            } else {
+              // Phương án cuối cùng tăng liều 2UI Lantus
+              if (medicalObject.getCountUsedSolve == 0) {
+                medicalObject.upCountUsedSolve();
+                medicalObject.set_Content_State_Check_Gluco_Failed(
+                    medicalObject.getLastFaildedResultValue());
+                medicalObject.setContentdisplay =
+                    """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
+                medicalObject.resetInjectionValueDefault();
+                Future.delayed(Duration(seconds: 6), (() {
+                  setState(() {
+                    medicalObject.setStateInitial();
+                  });
+                }));
+              } else if (medicalObject.getCountUsedSolve == 1) {
+                medicalObject.setContentdisplay =
+                    "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN ";
+                medicalObject.resetAllvalueIinitialStatedefaut();
+                setState(() {
+                  _flagTimer = false;
+                });
+              }
+            }
+          }
+        } else if (medicalObject.getCheckPassInjection() == 1) {
+          medicalObject.setContentdisplay =
+              "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !";
+          medicalObject.resetInjectionValueDefault();
+        }
+      }
+    });
+  }
+
+  // show toast infomation
+  void showToast(String msg, {int? duration, int? gravity}) {
+    Toast.show(msg, duration: duration, gravity: gravity);
   }
 }

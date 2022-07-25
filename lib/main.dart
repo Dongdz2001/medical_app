@@ -26,6 +26,11 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
+        textTheme: const TextTheme(
+          headline1: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          headline2: TextStyle(fontSize: 18.0, color: Colors.black),
+          bodyText2: TextStyle(fontSize: 20.0, fontFamily: 'Hind'),
+        ),
       ),
       home: const MyHomePage(title: 'Medicial Home'),
     );

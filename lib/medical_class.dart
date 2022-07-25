@@ -22,6 +22,7 @@ class Medical {
     + Liều khởi đầu: 0.2 UI/kg/ngày 
     + Loại Insulin: Lantus
 """;
+
   get getYInsu22H => this.yInsu22H;
   void setYInsu22H(double value) => this.yInsu22H = """ 
 - Tiêm dưới da insulin tác dụng chậm :
@@ -30,10 +31,10 @@ class Medical {
 """;
 
 // nội dung phương án bổ sung khi không đạt mục tiêu
-  String sloveFailedContext = "Tiêm dưới da 2UI";
+  String sloveFailedContext = "Tiêm dưới da Actrapid 2UI\n";
   get getSloveFailedContext => this.sloveFailedContext;
-  void setSloveFailedContext(int value) =>
-      this.sloveFailedContext = "Tiêm dưới da ${value}UI";
+  void _setSloveFailedContext(int value) =>
+      this.sloveFailedContext = "Tiêm dưới da Actrapid ${value}UI\n";
 
 // nội dung phương án cho không tiêm Insulin
   String nInsulinAllTime = " Tạm ngừng các thuốc hạ đường máu ";
@@ -56,38 +57,86 @@ class Medical {
   get getContentdisplay => this._content_display;
   set setContentdisplay(String value) => this._content_display = value;
 
-  // thiết lập trạng thái ban đầu
+  // Kiểm tra trạng thái ban đầu
   bool _initialStateBool = false;
   get getInitialStateBool => this._initialStateBool;
   set setInitialStateBool(bool initialStateBool) =>
       this._initialStateBool = initialStateBool;
+  // Kiểm tra trạng thai phương án cuối
+  bool _lastStateBool = false;
+  get getLastStateBool => this._lastStateBool;
+  set setLastStateBool(bool value) => this._lastStateBool = value;
 
   // số lần sử dụng 1 phương án
   int countUsedSolve = 0;
   get getCountUsedSolve => this.countUsedSolve;
-  set setCountUsedSolve(int countUsedSolve) =>
-      this.countUsedSolve = countUsedSolve;
+  void upCountUsedSolve() => this.countUsedSolve++;
+  void downCountUsedSolve() => this.countUsedSolve--;
 
   // Kiểm tra nồng độ Glucozo và in ra kết quả nếu failed
   void set_Content_State_Check_Gluco_Failed(double gluco) {
     if ((8.3 < gluco) && (gluco <= 11.1)) {
-      setSloveFailedContext(2);
+      _setSloveFailedContext(2);
     } else if (gluco > 11.1) {
-      setSloveFailedContext(4);
+      _setSloveFailedContext(4);
     } else {
       setYInsu22H(0.2);
       print("Có lỗi xảy ra, không xác định");
     }
   }
 
-  // kiểm tra hàm lượng glucozo có đạt mục tiêu hay không
-  bool getCheckGlucozo(double glu) => (glu >= 3.9 && glu <= 8.3) ? true : false;
-
   // danh sách trạng thái tiêm đạt hay không (8 lần / ngày)
   List<double> _listResultInjection = [-1, -1, -1, -1, -1, -1, -1, -1];
+  List<String> _listTimeResultInjection = [
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none",
+    "none"
+  ];
   double getItemListResultInjection(int i) => this._listResultInjection[i];
-  void setItemListResultInjectionItem(int i, double value) =>
-      this._listResultInjection[i] = value;
+  void addItemListResultInjectionItem(double value) {
+    for (var i = 0; i < 8; i++) {
+      if (_listResultInjection[i] == -1) {
+        _listResultInjection[i] = value;
+        _listTimeResultInjection[i] =
+            DateTime.now().toString().substring(0, 16);
+        break;
+      }
+    }
+  }
+
+  void RemoveLastItemInjection() {
+    for (var i = 7; i >= 0; i--) {
+      if (_listResultInjection[i] != -1) {
+        _listResultInjection[i] = -1;
+        _listTimeResultInjection[i] = "none";
+        break;
+      }
+    }
+  }
+
+  // kiểm tra hàm lượng glucozo có đạt mục tiêu hay không
+  bool getCheckGlucozo(double glu) => (glu >= 3.9 && glu <= 8.3) ? true : false;
+  bool getCheckGlucozoIndex(int i) => (this._listResultInjection[i] >= 3.9 &&
+          this._listResultInjection[i] <= 8.3)
+      ? true
+      : false;
+  double getLastFaildedResultValue() {
+    for (int i = 7; i >= 0; i--) {
+      if (!getCheckGlucozoIndex(i) && this._listResultInjection[i] != -1)
+        return this._listResultInjection[i];
+    }
+
+    return -1;
+  }
+
+  // lấy ra thời gian tiêm
+  String getTimeInjectItemList(int i) => _listTimeResultInjection[i];
+
   bool getItemCheckFlag(int i) =>
       getCheckGlucozo(getItemListResultInjection(i));
   int getCountInject() {
@@ -97,16 +146,37 @@ class Medical {
     return 8;
   }
 
+  // Reset value default;
+  void resetInjectionValueDefault() {
+    for (var i = 0; i < 8; i++) {
+      this._listResultInjection[i] = -1;
+      this._listTimeResultInjection[i] = "none";
+    }
+  }
+
+  // reset all value
+  void resetAllvalueIinitialStatedefaut() {
+    resetInjectionValueDefault();
+    this.timeStart = DateTime.now().toString().substring(0, 16);
+    this.setYInsu22H(0.2);
+    if (getCountUsedSolve == 1) {
+      downCountUsedSolve();
+    }
+  }
+
   // kiểm tra xem có đạt mục tiêu số lần đạt không
-  bool getCheckPassInjection() {
+  int getCheckPassInjection() {
     int count = 0;
     for (var i = 0; i < getCountInject(); i++) {
       !getItemCheckFlag(i) ? count++ : null;
-      if (count == 5) {
-        return false;
+      if (count >= 5) {
+        return 0;
       }
     }
-    return true;
+    if (getCountInject() - count >= 4) {
+      return 1;
+    }
+    return -1;
   }
 
   // Thiết lập trạng thái state ban đầu
@@ -117,7 +187,7 @@ class Medical {
     }
     if (getCheckOpenCloseTimeStatus("6:31", "12:30")) {
       this._content_display +=
-          "Trong khoảng 12h-12h30p trưa: \n ${glucose_infusion_6H12H22H} ";
+          "Trong khoảng 12h-12h30p trưa: \n ${glucose_infusion_6H12H22H}";
       if (getCountUsedSolve == 1) {
         this._content_display += getSloveFailedContext;
       }
@@ -126,8 +196,14 @@ class Medical {
       this._content_display +=
           "Trong khoảng 6h - 6h30p tối: \n ${symetricGlucozoContent}";
     } else if (getCheckOpenCloseTimeStatus("18:31", "22:31")) {
-      this._content_display +=
-          "Trong khoảng 22h-22h30p đêm: \n ${glucose_infusion_6H12H22H} ${yInsu22H}";
+      if (!_initialStateBool) {
+        this._content_display +=
+            "Trong khoảng 22h-22h30p đêm: \n ${glucose_infusion_6H12H22H} ${yInsu22H}";
+      } else {
+        this._content_display +=
+            "Trong khoảng 22h-22h30p đêm: \n ${glucose_infusion_6H12H22H}";
+      }
+
       if (getCountUsedSolve == 1) {
         this._content_display += getSloveFailedContext;
       }
