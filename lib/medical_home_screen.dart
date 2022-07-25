@@ -5,6 +5,7 @@ import 'package:medical_app/medical_class.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 // import "package:threading/threading.dart";
+import "dart:async";
 
 class MedicalHomeScreen extends StatefulWidget {
   const MedicalHomeScreen({Key? key}) : super(key: key);
@@ -18,6 +19,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   bool _isVisibleYesNoo = true;
   int countInject = 0;
   Medical medicalObject = Medical();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -109,13 +111,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                     [Colors.green]
                                   ],
                                   onToggle: (index) async {
-                                    // DateTime now = DateTime.now();
-                                    // print("${now.hour} : ${now.minute}");
-
-                                    // bool flag = getCheckOpenCloseTimeStatus(
-                                    //     "1:31", "11:30");
-                                    // print('switched to: $index');
-                                    // print("check: ${flag}");
+                                    medicalObject.setTimeStart = DateTime.now()
+                                        .toString()
+                                        .substring(0, 19);
+                                    print(medicalObject.getTimeStart);
                                     _isVisibleGlucozo = !_isVisibleGlucozo;
                                     await Future.delayed(
                                         const Duration(milliseconds: 500), () {
@@ -124,17 +123,12 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                         medicalObject.setInitialStateBool =
                                             index == 0 ? true : false;
                                         medicalObject.setStateInitial();
-                                        // var thread = new Thread(() async {
-                                        //   while (true) {
-                                        //     await Future.delayed(
-                                        //         const Duration(
-                                        //             milliseconds: 100), () {
-                                        //       setState(() {
-                                        //         medicalObject.setStateInitial();
-                                        //       });
-                                        //     });
-                                        //   }
-                                        // });
+                                        Timer timer = Timer.periodic(
+                                            Duration(seconds: 10), (Timer t) {
+                                          setState(() {
+                                            medicalObject.setStateInitial();
+                                          });
+                                        });
                                       });
                                     });
                                   },
@@ -154,9 +148,9 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
             visible: _isVisibleGlucozo,
             child: Row(
               children: [
-                SizedBox(width: widthDevideMethod(0.06)),
+                SizedBox(width: widthDevideMethod(0.05)),
                 const Text(
-                  'Nhập nồng độ glucozơ : ',
+                  ' Nồng độ glucozơ : ',
                   style: TextStyle(fontSize: 20),
                 ),
                 Container(
@@ -176,7 +170,11 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                     ),
                     style: TextStyle(fontSize: 20),
                   ),
-                )
+                ),
+                Icon(
+                  Icons.history,
+                  size: 30,
+                ),
               ],
             ),
           ),

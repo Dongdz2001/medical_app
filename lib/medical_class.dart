@@ -1,6 +1,9 @@
 import 'package:medical_app/controller_time.dart';
 
 class Medical {
+  // đo lượng đường trong  máu và nhập lại kết quả xuống bên dưới
+  String symetricGlucozoContent = "Đo nồng độ glucozo và nhập lại kết quả";
+
   // nội dung chung cho cả 2 phương án đầu tiên
   String glucose_infusion_6H12H22H = """ 
 -	 Truyền glucose 10% 500ml \n pha truyền 10UI Actrapid (1 chai, 100ml/h)  
@@ -42,6 +45,11 @@ class Medical {
   String namePD = "Phác đồ hiện tại: \n NUÔI DƯỠNG ĐƯỜNG TĨNH MẠCH ";
   get getNamePD => this.namePD;
   // set setNamePD(String namePD) => this.namePD = namePD;
+
+  // Thời gian bắt đầu phác đồ
+  String timeStart = "00:00";
+  get getTimeStart => this.timeStart;
+  set setTimeStart(String timeStart) => this.timeStart = timeStart;
 
   // nội dung hiển thị
   String _content_display = "Bạn có đang tiêm Insulin không :  ";
@@ -109,22 +117,28 @@ class Medical {
     }
     if (getCheckOpenCloseTimeStatus("6:31", "12:30")) {
       this._content_display +=
-          "Trong khoảng 12h-12h30p trưa: \n ${glucose_infusion_6H12H22H} \n";
+          "Trong khoảng 12h-12h30p trưa: \n ${glucose_infusion_6H12H22H} ";
       if (getCountUsedSolve == 1) {
         this._content_display += getSloveFailedContext;
       }
-    } else if (getCheckOpenCloseTimeStatus("12:31", "22:31")) {
+      this._content_display += symetricGlucozoContent;
+    } else if (getCheckOpenCloseTimeStatus("12:31", "18:30")) {
+      this._content_display +=
+          "Trong khoảng 6h - 6h30p tối: \n ${symetricGlucozoContent}";
+    } else if (getCheckOpenCloseTimeStatus("18:31", "22:31")) {
       this._content_display +=
           "Trong khoảng 22h-22h30p đêm: \n ${glucose_infusion_6H12H22H} ${yInsu22H}";
       if (getCountUsedSolve == 1) {
         this._content_display += getSloveFailedContext;
       }
+      this._content_display += symetricGlucozoContent;
     } else {
       this._content_display +=
-          "Trong khoảng 6h-6h30p sáng: \n ${glucose_infusion_6H12H22H} \n";
+          "Trong khoảng 6h-6h30p sáng: \n ${glucose_infusion_6H12H22H} ";
       if (getCountUsedSolve == 1) {
         this._content_display += getSloveFailedContext;
       }
+      this._content_display += symetricGlucozoContent;
     }
   }
 }
