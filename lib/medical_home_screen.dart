@@ -49,8 +49,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   height: heightDevideMethod(0.4),
                   child: Row(
                     children: [
-                      SizedBox(
+                      Container(
+                        color: Colors.white,
                         width: widthDevideMethod(0.1),
+                        height: heightDevideMethod(0.37),
                       ),
                       SizedBox(
                           width: widthDevideMethod(0.7),
@@ -244,8 +246,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
               medicalObject.setInitialStateBool =
                   !medicalObject.getInitialStateBool;
               medicalObject.resetInjectionValueDefault();
+              _flagTimer = !_flagTimer;
               Future.delayed(Duration(seconds: 10), (() {
                 setState(() {
+                  _flagTimer = !_flagTimer;
                   medicalObject.setStateInitial();
                 });
               }));
@@ -260,9 +264,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.upCountUsedSolve();
-
+                _flagTimer = !_flagTimer;
                 medicalObject.resetInjectionValueDefault();
-                Future.delayed(Duration(seconds: 10), (() {
+                Future.delayed(Duration(seconds: 6), (() {
+                  _flagTimer = !_flagTimer;
                   setState(() {
                     medicalObject.setStateInitial();
                   });
@@ -274,8 +279,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setYInsu22H(2);
                 medicalObject.setLastStateBool = true;
                 medicalObject.resetInjectionValueDefault();
+                _flagTimer = !_flagTimer;
                 Future.delayed(Duration(seconds: 6), (() {
                   setState(() {
+                    _flagTimer = !_flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
@@ -289,8 +296,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.resetInjectionValueDefault();
+                _flagTimer = !_flagTimer;
                 Future.delayed(Duration(seconds: 6), (() {
                   setState(() {
+                    _flagTimer = !_flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
