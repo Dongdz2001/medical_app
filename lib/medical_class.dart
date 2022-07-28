@@ -218,3 +218,13 @@ class Medical {
     }
   }
 }
+
+// class MedicalList {
+//   List<Medical> items = [];
+
+//   toJSONEncodable() {
+//     return items.map((item) {
+//       return item.toJSONEncodable();
+//     }).toList();
+//   }
+// }

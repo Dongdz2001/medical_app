@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:medical_app/controller_time.dart';
 import 'package:medical_app/history_screen.dart';
 import 'package:medical_app/medical_class.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:toggle_switch/toggle_switch.dart';
-
 import 'package:toast/toast.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 import "dart:async";
 
 class MedicalHomeScreen extends StatefulWidget {
@@ -21,21 +21,30 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   bool _isVisibleYesNoo = true;
   bool _flagTimer = true;
   Medical medicalObject = Medical();
-  TextEditingController _editingController = TextEditingController();
+  final TextEditingController _editingController = TextEditingController();
+
+  // new add Controller HP
+  final nameController = TextEditingController();
+  final genderController = TextEditingController();
+  final ageController = TextEditingController();
+  final heightController = TextEditingController();
+  final weightController = TextEditingController();
+  final gluController = TextEditingController();
+  final databaseRef = FirebaseDatabase.instance.ref();
 
   @override
   Widget build(BuildContext context) {
     ToastContext().init(context);
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.only(bottom: 20, top: 20),
+            padding: const EdgeInsets.only(bottom: 20, top: 20),
             child: Text(
               '${medicalObject.getNamePD}',
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 23, fontWeight: FontWeight.bold, height: 1.5),
               textAlign: TextAlign.center,
             ),
@@ -58,7 +67,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                           width: widthDevideMethod(0.7),
                           child: Image.asset("assets/doctor.jpg",
                               fit: BoxFit.fitHeight)),
-                      Expanded(child: Container(color: Color(0xfff5f6f6))),
+                      Expanded(
+                          child: Container(color: const Color(0xfff5f6f6))),
                     ],
                   ),
                 ),
@@ -68,8 +78,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   child: Container(
                     alignment: Alignment.topCenter,
                     width: widthDevideMethod(0.91),
-                    padding: EdgeInsets.symmetric(vertical: 5),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    decoration: const BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage("assets/bbchat1.png"),
                         fit: BoxFit.fill,
@@ -88,17 +98,17 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                             ),
                             Text(
                               '${medicalObject.getContentdisplay}  ',
-                              style: TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                             Container(
-                              padding: EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 8),
                               alignment: Alignment.center,
                               child: Visibility(
                                 visible: _isVisibleYesNoo,
                                 child: ToggleSwitch(
-                                  customWidths: [40.0, 50.0],
-                                  customHeights: [20, 20],
+                                  customWidths: const [40.0, 50.0],
+                                  customHeights: const [20, 20],
                                   initialLabelIndex: 2,
                                   cornerRadius: 20.0,
                                   activeFgColor: Colors.white,
@@ -106,13 +116,13 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                   inactiveFgColor: Colors.white,
                                   totalSwitches: 2,
                                   fontSize: 14,
-                                  labels: ['No', 'Yes'],
+                                  labels: const ['No', 'Yes'],
                                   //Icons.backspace_rounded, Icons.add_task_rounded
                                   // icons: [
                                   //   Icons.backspace_rounded,
                                   //   Icons.add_task_rounded
                                   // ],
-                                  activeBgColors: [
+                                  activeBgColors: const [
                                     [Colors.pink],
                                     [Colors.green]
                                   ],
@@ -130,7 +140,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                                             index == 0 ? true : false;
                                         medicalObject.setStateInitial();
                                         Timer timer = Timer.periodic(
-                                            Duration(seconds: 10), (Timer t) {
+                                            const Duration(seconds: 10),
+                                            (Timer t) {
                                           if (_flagTimer) {
                                             setState(() {
                                               medicalObject.setStateInitial();
@@ -161,7 +172,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   ' Nồng độ glucozơ : ',
                   style: TextStyle(fontSize: 20),
                 ),
-                Container(
+                SizedBox(
                   width: 80,
                   height: 40,
                   child: TextField(
@@ -170,14 +181,14 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                     enableSuggestions: false,
                     autocorrect: false,
                     keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
+                        const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                     ],
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       counter: Offstage(),
                     ),
-                    style: TextStyle(fontSize: 20),
+                    style: const TextStyle(fontSize: 20),
                     onSubmitted: (value) {
                       _logicStateInfomation(value);
                     },
@@ -189,7 +200,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                       MaterialPageRoute(
                           builder: (context) =>
                               HistoryScreen(medical: medicalObject))),
-                  child: Icon(
+                  child: const Icon(
                     Icons.history,
                     size: 30,
                   ),
@@ -200,10 +211,92 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
           SizedBox(height: heightDevideMethod(0.02)),
           Container(
             color: Colors.amberAccent,
-            child: Text(
+            child: const Text(
               'Thông tin bệnh nhân: ',
               style: TextStyle(fontSize: 20),
             ),
+          ),
+
+          // Add information of HP
+          Column(
+            children: [
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: genderController,
+                  decoration: InputDecoration(
+                    labelText: 'Giới tính',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: ageController,
+                  decoration: InputDecoration(
+                    labelText: 'Năm Sinh',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: heightController,
+                  decoration: InputDecoration(
+                    labelText: 'Chiều cao',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: weightController,
+                  decoration: InputDecoration(
+                    labelText: 'Cân nặng',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              TextFormField(
+                  controller: gluController,
+                  decoration: InputDecoration(
+                    labelText: 'Glu mmol/l',
+                    border: OutlineInputBorder(),
+                  )),
+              SizedBox(
+                height: heightDevideMethod(0.02),
+              ),
+              OutlinedButton(
+                onPressed: () {
+                  if (nameController.text.isNotEmpty &&
+                      ageController.text.isNotEmpty &&
+                      genderController.text.isNotEmpty &&
+                      heightController.text.isNotEmpty &&
+                      weightController.text.isNotEmpty &&
+                      gluController.text.isNotEmpty) {
+                    insertData(
+                        nameController.text,
+                        genderController.text,
+                        ageController.text,
+                        heightController.text,
+                        weightController.text,
+                        gluController.text);
+                  }
+                },
+                child: Text('Add', style: TextStyle(fontSize: 18)),
+              )
+            ],
           ),
         ],
       ),
@@ -216,9 +309,9 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
           .addItemListResultInjectionItem(double.parse(value.toString()));
       _editingController.text = "";
       Future.delayed(
-          Duration(seconds: 1),
+          const Duration(seconds: 1),
           (() => showToast(
-              "Nồng độ Glucozo ${value} ${medicalObject.getCheckGlucozo(double.parse(value.toString())) ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
+              "Nồng độ Glucozo $value ${medicalObject.getCheckGlucozo(double.parse(value.toString())) ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
               duration: 3,
               gravity: Toast.bottom)));
       if (medicalObject.getCountInject() >= 4) {
@@ -233,7 +326,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
               medicalObject.upCountUsedSolve();
               medicalObject.resetInjectionValueDefault();
-              Future.delayed(Duration(seconds: 10), (() {
+              Future.delayed(const Duration(seconds: 10), (() {
                 setState(() {
                   medicalObject.setStateInitial();
                 });
@@ -247,7 +340,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                   !medicalObject.getInitialStateBool;
               medicalObject.resetInjectionValueDefault();
               _flagTimer = !_flagTimer;
-              Future.delayed(Duration(seconds: 10), (() {
+              Future.delayed(const Duration(seconds: 10), (() {
                 setState(() {
                   _flagTimer = !_flagTimer;
                   medicalObject.setStateInitial();
@@ -266,7 +359,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.upCountUsedSolve();
                 _flagTimer = !_flagTimer;
                 medicalObject.resetInjectionValueDefault();
-                Future.delayed(Duration(seconds: 6), (() {
+                Future.delayed(const Duration(seconds: 6), (() {
                   _flagTimer = !_flagTimer;
                   setState(() {
                     medicalObject.setStateInitial();
@@ -280,7 +373,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setLastStateBool = true;
                 medicalObject.resetInjectionValueDefault();
                 _flagTimer = !_flagTimer;
-                Future.delayed(Duration(seconds: 6), (() {
+                Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
                     _flagTimer = !_flagTimer;
                     medicalObject.setStateInitial();
@@ -297,7 +390,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.resetInjectionValueDefault();
                 _flagTimer = !_flagTimer;
-                Future.delayed(Duration(seconds: 6), (() {
+                Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
                     _flagTimer = !_flagTimer;
                     medicalObject.setStateInitial();
@@ -325,5 +418,41 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   // show toast infomation
   void showToast(String msg, {int? duration, int? gravity}) {
     Toast.show(msg, duration: duration, gravity: gravity);
+  }
+
+  //  Insert Data of Hoang Phan
+  Future<void> insertData(String name, String gender, String age, String height,
+      String weight, String glu) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/163");
+    await ref.set({
+      "name": "John",
+      "age": 18,
+      "address": {"line1": "100 Mountain View"}
+    });
+    // String? key = databaseRef.child('Users').push().key;
+    // databaseRef.child('Users').child(key!).set({
+    //   'id': key,
+    //   'name': name,
+    //   'gender': gender,
+    //   'age': age,
+    //   'height': height,
+    //   'weight': weight,
+    //   'glu': glu
+    // });
+    // nameController.clear();
+    // genderController.clear();
+    // ageController.clear();
+    // heightController.clear();
+    // weightController.clear();
+    // gluController.clear();
+    final ref1 = FirebaseDatabase.instance.ref();
+    final snapshot = await ref1.child('users/123').get();
+    var value = Map<String, dynamic>.from(snapshot.value as Map);
+    var title = value["age"];
+    if (snapshot.exists) {
+      print(value);
+    } else {
+      print('No data available.');
+    }
   }
 }
