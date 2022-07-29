@@ -1,4 +1,8 @@
+import 'package:async/async.dart';
 import 'package:medical_app/controller_time.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'dart:async';
 
 class Medical {
   // đo lượng đường trong  máu và nhập lại kết quả xuống bên dưới
@@ -70,6 +74,7 @@ class Medical {
   // số lần sử dụng 1 phương án
   int countUsedSolve = 0;
   get getCountUsedSolve => this.countUsedSolve;
+  set setCountUsedSolve(int i) => this.countUsedSolve = i;
   void upCountUsedSolve() => this.countUsedSolve++;
   void downCountUsedSolve() => this.countUsedSolve--;
 
@@ -86,7 +91,19 @@ class Medical {
   }
 
   // danh sách trạng thái tiêm đạt hay không (8 lần / ngày)
-  List<double> _listResultInjection = [-1, -1, -1, -1, -1, -1, -1, -1];
+  List<double> _listResultInjection = [
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0
+  ];
+  get getListResultInjection => this._listResultInjection;
+  set setListResultInjection(List<double> listTemp) =>
+      this._listResultInjection = listTemp;
   List<String> _listTimeResultInjection = [
     "none",
     "none",
@@ -97,11 +114,14 @@ class Medical {
     "none",
     "none"
   ];
+  get getListTimeResultInjection => this._listTimeResultInjection;
+  set setListTimeResultInjection(List<String> list) =>
+      this._listTimeResultInjection = list;
   double getItemListResultInjection(int i) => this._listResultInjection[i];
-  void addItemListResultInjectionItem(double value) {
+  void addItemListResultInjectionItem(String value) {
     for (var i = 0; i < 8; i++) {
-      if (_listResultInjection[i] == -1) {
-        _listResultInjection[i] = value;
+      if (_listResultInjection[i] + 1.0 == 0) {
+        _listResultInjection[i] = double.parse(value);
         _listTimeResultInjection[i] =
             DateTime.now().toString().substring(0, 16);
         break;
@@ -217,14 +237,65 @@ class Medical {
       this._content_display += symetricGlucozoContent;
     }
   }
+
+  AsyncMemoizer<String> memCache = AsyncMemoizer();
+  // Read data from RealTime Database
+  Future<String> readDataRealTimeDB(String s) async {
+    return memCache.runOnce(() async {
+      final refer = FirebaseDatabase.instance.ref();
+      // await refer.child(s).onValue.listen((event) {}
+      final snapshot = await refer.child(s).get();
+      if (snapshot.exists) {
+        var value = Map<String, dynamic>.from(snapshot.value as Map);
+        this.isVisibleGlucozo = value["isVisibleGlucozo"];
+        this.flagTimer = value["flagTimer"];
+        this.isVisibleYesNoo = value["isVisibleYesNoo"];
+        this.setInitialStateBool = value["initialStateBool"];
+        this.setLastStateBool = value["lastStateBool"];
+        this.setCountUsedSolve = value["countUsedSolve"];
+        this.setListResultInjection =
+            (value["listResultInjection"] as List<dynamic>)
+                .map((e) => (e as int).toDouble())
+                .toList();
+        this.setListTimeResultInjection =
+            (value["listTimeResultInjection"] as List<dynamic>)
+                .map((e) => e.toString())
+                .toList();
+        this.setTimeStart = value["timeStart"].toString();
+        setStateInitial();
+      }
+      return "done";
+    });
+  }
+
+  // Save data from
+
+  //check state display Object
+  bool isVisibleGlucozo = false;
+  bool isVisibleYesNoo = true;
+  bool flagTimer = true;
+
+  toJSONEncodable() {
+    Map<String, dynamic> subMedicalObject = new Map();
+    subMedicalObject['content_display'] = this._content_display;
+    subMedicalObject['namePD'] = this.namePD;
+    subMedicalObject['initialStateBool'] = this._initialStateBool;
+    subMedicalObject['listResultInjection'] = this._listResultInjection;
+    subMedicalObject['listTimeResultInjection'] = this._listTimeResultInjection;
+    subMedicalObject['lastStateBool'] = this._lastStateBool;
+    subMedicalObject['countUsedSolve'] = this.countUsedSolve;
+    subMedicalObject['isVisibleGlucozo'] = this.isVisibleGlucozo;
+    subMedicalObject['isVisibleYesNoo'] = this.isVisibleYesNoo;
+    subMedicalObject['flagTimer'] = this.flagTimer;
+  }
 }
 
-// class MedicalList {
-//   List<Medical> items = [];
+class MedicalList {
+  List<Medical> items = [];
 
-//   toJSONEncodable() {
-//     return items.map((item) {
-//       return item.toJSONEncodable();
-//     }).toList();
-//   }
-// }
+  toJSONEncodable() {
+    return items.map((item) {
+      return item.toJSONEncodable();
+    }).toList();
+  }
+}

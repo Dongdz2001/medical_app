@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medical_app/history_screen.dart';
@@ -7,6 +9,7 @@ import 'package:toggle_switch/toggle_switch.dart';
 import 'package:toast/toast.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/widgets.dart';
 import "dart:async";
 
 class MedicalHomeScreen extends StatefulWidget {
@@ -16,11 +19,10 @@ class MedicalHomeScreen extends StatefulWidget {
   State<MedicalHomeScreen> createState() => _MedicalHomeScreenState();
 }
 
-class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
-  bool _isVisibleGlucozo = false;
-  bool _isVisibleYesNoo = true;
-  bool _flagTimer = true;
+class _MedicalHomeScreenState extends State<MedicalHomeScreen>
+    with WidgetsBindingObserver {
   Medical medicalObject = Medical();
+  // late AppLifecycleState _lastLifecycleState;
   final TextEditingController _editingController = TextEditingController();
 
   // new add Controller HP
@@ -30,283 +32,406 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   final heightController = TextEditingController();
   final weightController = TextEditingController();
   final gluController = TextEditingController();
-  final databaseRef = FirebaseDatabase.instance.ref();
+  final reference = FirebaseDatabase.instance.ref("Medicals/medical");
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  // sava data when close app
+  @override
+  void dispose() {
+    print("app was closed");
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    print("StateChange: ${state}");
+    if (state == AppLifecycleState.paused) {}
+    // _lastLifecycleState = state;
+    await reference.set({
+      "namePD": medicalObject.getNamePD,
+      "initialStateBool": medicalObject.getInitialStateBool,
+      "lastStateBool": medicalObject.getLastStateBool,
+      "listResultInjection": medicalObject.getListResultInjection,
+      "listTimeResultInjection": medicalObject.getListTimeResultInjection,
+      "isVisibleGlucozo": medicalObject.isVisibleGlucozo,
+      "isVisibleYesNoo": medicalObject.isVisibleYesNoo,
+      "flagTimer": medicalObject.flagTimer,
+      "countUsedSolve": medicalObject.getCountUsedSolve,
+      "timeStart": medicalObject.getTimeStart.toString()
+      //  "address": {"line1": "100 Mountain View"}
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     ToastContext().init(context);
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.only(bottom: 20, top: 20),
-            child: Text(
-              '${medicalObject.getNamePD}',
-              style: const TextStyle(
-                  fontSize: 23, fontWeight: FontWeight.bold, height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Container(
-            alignment: Alignment.topLeft,
-            height: heightDevideMethod(0.42),
-            child: Stack(
-              children: [
-                SizedBox(
-                  height: heightDevideMethod(0.4),
-                  child: Row(
-                    children: [
-                      Container(
-                        color: Colors.white,
-                        width: widthDevideMethod(0.1),
-                        height: heightDevideMethod(0.37),
-                      ),
-                      SizedBox(
-                          width: widthDevideMethod(0.7),
-                          child: Image.asset("assets/doctor.jpg",
-                              fit: BoxFit.fitHeight)),
-                      Expanded(
-                          child: Container(color: const Color(0xfff5f6f6))),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 120,
-                  left: 10,
-                  child: Container(
-                    alignment: Alignment.topCenter,
-                    width: widthDevideMethod(0.91),
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/bbchat1.png"),
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(height: heightDevideMethod(0.03)),
-
-                        //  Bạn có đang tiêm Insulin không ?
-                        Row(
-                          children: [
-                            Container(
-                              width: widthDevideMethod(0.04),
+    return Scaffold(
+        body: FutureBuilder(
+            future: medicalObject.readDataRealTimeDB("Medicals/medical"),
+            builder: (context, snapshot) {
+              List<Widget> children;
+              if (snapshot.hasData) {
+                children = <Widget>[
+                  SingleChildScrollView(
+                    child: Container(
+                      alignment: Alignment.topLeft,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [
+                          Color(0xfff5f6f6),
+                          Colors.white,
+                        ],
+                      )),
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(bottom: 20, top: 20),
+                            child: Text(
+                              '${medicalObject.getNamePD}',
+                              style: const TextStyle(
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.5),
+                              textAlign: TextAlign.center,
                             ),
-                            Text(
-                              '${medicalObject.getContentdisplay}  ',
-                              style: const TextStyle(fontSize: 16),
-                              textAlign: TextAlign.left,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              alignment: Alignment.center,
-                              child: Visibility(
-                                visible: _isVisibleYesNoo,
-                                child: ToggleSwitch(
-                                  customWidths: const [40.0, 50.0],
-                                  customHeights: const [20, 20],
-                                  initialLabelIndex: 2,
-                                  cornerRadius: 20.0,
-                                  activeFgColor: Colors.white,
-                                  inactiveBgColor: Colors.grey,
-                                  inactiveFgColor: Colors.white,
-                                  totalSwitches: 2,
-                                  fontSize: 14,
-                                  labels: const ['No', 'Yes'],
-                                  //Icons.backspace_rounded, Icons.add_task_rounded
-                                  // icons: [
-                                  //   Icons.backspace_rounded,
-                                  //   Icons.add_task_rounded
-                                  // ],
-                                  activeBgColors: const [
-                                    [Colors.pink],
-                                    [Colors.green]
-                                  ],
-                                  onToggle: (index) {
-                                    medicalObject.setTimeStart = DateTime.now()
-                                        .toString()
-                                        .substring(0, 16);
-                                    print(medicalObject.getTimeStart);
-                                    _isVisibleGlucozo = !_isVisibleGlucozo;
-                                    Future.delayed(
-                                        const Duration(milliseconds: 500), () {
-                                      setState(() {
-                                        _isVisibleYesNoo = false;
-                                        medicalObject.setInitialStateBool =
-                                            index == 0 ? true : false;
-                                        medicalObject.setStateInitial();
-                                        Timer timer = Timer.periodic(
-                                            const Duration(seconds: 10),
-                                            (Timer t) {
-                                          if (_flagTimer) {
-                                            setState(() {
-                                              medicalObject.setStateInitial();
-                                            });
-                                          }
-                                        });
-                                      });
-                                    });
-                                  },
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            height: heightDevideMethod(0.42),
+                            child: Stack(
+                              children: [
+                                SizedBox(
+                                  height: heightDevideMethod(0.4),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        color: Colors.white,
+                                        width: widthDevideMethod(0.1),
+                                        height: heightDevideMethod(0.37),
+                                      ),
+                                      SizedBox(
+                                          width: widthDevideMethod(0.7),
+                                          child: Image.asset(
+                                              "assets/doctor.jpg",
+                                              fit: BoxFit.fitHeight)),
+                                      Expanded(
+                                          child: Container(
+                                              color: const Color(0xfff5f6f6))),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Visibility(
-            visible: _isVisibleGlucozo,
-            child: Row(
-              children: [
-                SizedBox(width: widthDevideMethod(0.05)),
-                const Text(
-                  ' Nồng độ glucozơ : ',
-                  style: TextStyle(fontSize: 20),
-                ),
-                SizedBox(
-                  width: 80,
-                  height: 40,
-                  child: TextField(
-                    controller: _editingController,
-                    maxLength: 5,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
-                    ],
-                    decoration: const InputDecoration(
-                      counter: Offstage(),
-                    ),
-                    style: const TextStyle(fontSize: 20),
-                    onSubmitted: (value) {
-                      _logicStateInfomation(value);
-                    },
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              HistoryScreen(medical: medicalObject))),
-                  child: const Icon(
-                    Icons.history,
-                    size: 30,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: heightDevideMethod(0.02)),
-          Container(
-            color: Colors.amberAccent,
-            child: const Text(
-              'Thông tin bệnh nhân: ',
-              style: TextStyle(fontSize: 20),
-            ),
-          ),
+                                Positioned(
+                                  top: 120,
+                                  left: 10,
+                                  child: Container(
+                                    alignment: Alignment.topCenter,
+                                    width: widthDevideMethod(0.91),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 5),
+                                    decoration: const BoxDecoration(
+                                      image: DecorationImage(
+                                        image: AssetImage("assets/bbchat1.png"),
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                            height: heightDevideMethod(0.03)),
 
-          // Add information of HP
-          Column(
-            children: [
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: genderController,
-                  decoration: InputDecoration(
-                    labelText: 'Giới tính',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: ageController,
-                  decoration: InputDecoration(
-                    labelText: 'Năm Sinh',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: heightController,
-                  decoration: InputDecoration(
-                    labelText: 'Chiều cao',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: weightController,
-                  decoration: InputDecoration(
-                    labelText: 'Cân nặng',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              TextFormField(
-                  controller: gluController,
-                  decoration: InputDecoration(
-                    labelText: 'Glu mmol/l',
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(
-                height: heightDevideMethod(0.02),
-              ),
-              OutlinedButton(
-                onPressed: () {
-                  if (nameController.text.isNotEmpty &&
-                      ageController.text.isNotEmpty &&
-                      genderController.text.isNotEmpty &&
-                      heightController.text.isNotEmpty &&
-                      weightController.text.isNotEmpty &&
-                      gluController.text.isNotEmpty) {
-                    insertData(
-                        nameController.text,
-                        genderController.text,
-                        ageController.text,
-                        heightController.text,
-                        weightController.text,
-                        gluController.text);
-                  }
-                },
-                child: Text('Add', style: TextStyle(fontSize: 18)),
-              )
-            ],
-          ),
-        ],
-      ),
-    );
+                                        //  Bạn có đang tiêm Insulin không ?
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: widthDevideMethod(0.04),
+                                            ),
+                                            Text(
+                                              '${medicalObject.getContentdisplay}  ',
+                                              style:
+                                                  const TextStyle(fontSize: 16),
+                                              textAlign: TextAlign.left,
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              alignment: Alignment.center,
+                                              child: Visibility(
+                                                visible: medicalObject
+                                                    .isVisibleYesNoo,
+                                                child: ToggleSwitch(
+                                                  customWidths: const [
+                                                    40.0,
+                                                    50.0
+                                                  ],
+                                                  customHeights: const [20, 20],
+                                                  initialLabelIndex: 2,
+                                                  cornerRadius: 20.0,
+                                                  activeFgColor: Colors.white,
+                                                  inactiveBgColor: Colors.grey,
+                                                  inactiveFgColor: Colors.white,
+                                                  totalSwitches: 2,
+                                                  fontSize: 14,
+                                                  labels: const ['No', 'Yes'],
+                                                  //Icons.backspace_rounded, Icons.add_task_rounded
+                                                  // icons: [
+                                                  //   Icons.backspace_rounded,
+                                                  //   Icons.add_task_rounded
+                                                  // ],
+                                                  activeBgColors: const [
+                                                    [Colors.pink],
+                                                    [Colors.green]
+                                                  ],
+                                                  onToggle: (index) {
+                                                    medicalObject.setTimeStart =
+                                                        DateTime.now()
+                                                            .toString()
+                                                            .substring(0, 16);
+                                                    print(medicalObject
+                                                        .getTimeStart);
+                                                    medicalObject
+                                                            .isVisibleGlucozo =
+                                                        !medicalObject
+                                                            .isVisibleGlucozo;
+                                                    Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 500),
+                                                        () {
+                                                      setState(() {
+                                                        medicalObject
+                                                                .isVisibleYesNoo =
+                                                            false;
+                                                        medicalObject
+                                                                .setInitialStateBool =
+                                                            index == 0
+                                                                ? true
+                                                                : false;
+                                                        medicalObject
+                                                            .setStateInitial();
+                                                        Timer timer =
+                                                            Timer.periodic(
+                                                                const Duration(
+                                                                    seconds:
+                                                                        10),
+                                                                (Timer t) {
+                                                          if (medicalObject
+                                                              .flagTimer) {
+                                                            setState(() {
+                                                              medicalObject
+                                                                  .setStateInitial();
+                                                            });
+                                                          }
+                                                        });
+                                                      });
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Visibility(
+                            visible: medicalObject.isVisibleGlucozo,
+                            child: Row(
+                              children: [
+                                SizedBox(width: widthDevideMethod(0.05)),
+                                const Text(
+                                  ' Nồng độ glucozơ : ',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                SizedBox(
+                                  width: 80,
+                                  height: 40,
+                                  child: TextField(
+                                    controller: _editingController,
+                                    maxLength: 5,
+                                    enableSuggestions: false,
+                                    autocorrect: false,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp('[0-9.]')),
+                                    ],
+                                    decoration: const InputDecoration(
+                                      counter: Offstage(),
+                                    ),
+                                    style: const TextStyle(fontSize: 20),
+                                    onSubmitted: (value) {
+                                      _logicStateInfomation(value);
+                                    },
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => HistoryScreen(
+                                              medical: medicalObject))),
+                                  child: const Icon(
+                                    Icons.history,
+                                    size: 30,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: heightDevideMethod(0.02)),
+                          Container(
+                            color: Colors.amberAccent,
+                            child: const Text(
+                              'Thông tin bệnh nhân: ',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+
+                          // Add information of HP
+                          Column(
+                            children: [
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: nameController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Name',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: genderController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Giới tính',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: ageController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Năm Sinh',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: heightController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Chiều cao',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: weightController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Cân nặng',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              TextFormField(
+                                  controller: gluController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Glu mmol/l',
+                                    border: OutlineInputBorder(),
+                                  )),
+                              SizedBox(
+                                height: heightDevideMethod(0.02),
+                              ),
+                              OutlinedButton(
+                                onPressed: () {
+                                  if (nameController.text.isNotEmpty &&
+                                      ageController.text.isNotEmpty &&
+                                      genderController.text.isNotEmpty &&
+                                      heightController.text.isNotEmpty &&
+                                      weightController.text.isNotEmpty &&
+                                      gluController.text.isNotEmpty) {
+                                    insertData(
+                                        nameController.text,
+                                        genderController.text,
+                                        ageController.text,
+                                        heightController.text,
+                                        weightController.text,
+                                        gluController.text);
+                                  }
+                                },
+                                child:
+                                    Text('Add', style: TextStyle(fontSize: 18)),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ];
+              } else if (snapshot.hasError) {
+                children = <Widget>[
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 60,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text('Error: ${snapshot.error}'),
+                  )
+                ];
+              } else {
+                children = const <Widget>[
+                  SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: CircularProgressIndicator(),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Text('Awaiting result...'),
+                  )
+                ];
+              }
+              return Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: children,
+                  ),
+                ),
+              );
+            }));
   }
 
   Future<void> _logicStateInfomation(String value) async {
     setState(() {
-      medicalObject
-          .addItemListResultInjectionItem(double.parse(value.toString()));
+      medicalObject.addItemListResultInjectionItem(
+          value); // double.parse(value.toString())
       _editingController.text = "";
       Future.delayed(
           const Duration(seconds: 1),
@@ -339,10 +464,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
               medicalObject.setInitialStateBool =
                   !medicalObject.getInitialStateBool;
               medicalObject.resetInjectionValueDefault();
-              _flagTimer = !_flagTimer;
+              medicalObject.flagTimer = !medicalObject.flagTimer;
               Future.delayed(const Duration(seconds: 10), (() {
                 setState(() {
-                  _flagTimer = !_flagTimer;
+                  medicalObject.flagTimer = !medicalObject.flagTimer;
                   medicalObject.setStateInitial();
                 });
               }));
@@ -357,10 +482,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.upCountUsedSolve();
-                _flagTimer = !_flagTimer;
+                medicalObject.flagTimer = !medicalObject.flagTimer;
                 medicalObject.resetInjectionValueDefault();
                 Future.delayed(const Duration(seconds: 6), (() {
-                  _flagTimer = !_flagTimer;
+                  medicalObject.flagTimer = !medicalObject.flagTimer;
                   setState(() {
                     medicalObject.setStateInitial();
                   });
@@ -372,10 +497,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setYInsu22H(2);
                 medicalObject.setLastStateBool = true;
                 medicalObject.resetInjectionValueDefault();
-                _flagTimer = !_flagTimer;
+                medicalObject.flagTimer = !medicalObject.flagTimer;
                 Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
-                    _flagTimer = !_flagTimer;
+                    medicalObject.flagTimer = !medicalObject.flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
@@ -389,10 +514,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.resetInjectionValueDefault();
-                _flagTimer = !_flagTimer;
+                medicalObject.flagTimer = !medicalObject.flagTimer;
                 Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
-                    _flagTimer = !_flagTimer;
+                    medicalObject.flagTimer = !medicalObject.flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
@@ -401,7 +526,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
                     "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN ";
                 medicalObject.resetAllvalueIinitialStatedefaut();
                 setState(() {
-                  _flagTimer = false;
+                  medicalObject.flagTimer = false;
                 });
               }
             }
@@ -423,11 +548,11 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
   //  Insert Data of Hoang Phan
   Future<void> insertData(String name, String gender, String age, String height,
       String weight, String glu) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref("users/163");
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/173");
     await ref.set({
       "name": "John",
       "age": 18,
-      "address": {"line1": "100 Mountain View"}
+      "address": {"line1": "100 Mountain View", "line2": "Đông đẹp trai"}
     });
     // String? key = databaseRef.child('Users').push().key;
     // databaseRef.child('Users').child(key!).set({
@@ -445,12 +570,18 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen> {
     // heightController.clear();
     // weightController.clear();
     // gluController.clear();
-    final ref1 = FirebaseDatabase.instance.ref();
-    final snapshot = await ref1.child('users/123').get();
+    final reference = FirebaseDatabase.instance.ref();
+    final snapshot = await reference.child('Medicals/medical').get();
     var value = Map<String, dynamic>.from(snapshot.value as Map);
-    var title = value["age"];
+    var title = value["listResultInjection"];
     if (snapshot.exists) {
-      print(value);
+      // final snapTemp = await reference.child('users/123/address').get();
+      // var value2 = Map<String, dynamic>.from(snapTemp.value as Map);
+      List<dynamic> listName = value["listResultInjection"];
+      List<int> listInt = listName.map((e) => e as int).toList();
+      List<double> listDouble = listInt.map((e) => e.toDouble()).toList();
+      print(listInt is List<int>);
+      print(listDouble is List<double>);
     } else {
       print('No data available.');
     }

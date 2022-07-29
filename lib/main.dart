@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medical_app/home_screen.dart';
 import 'package:medical_app/medical_home_screen.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -69,27 +70,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-            alignment: Alignment.topLeft,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [
-                Color(0xfff5f6f6),
-                Colors.white,
-              ],
-            )),
-            child: MedicalHomeScreen()),
-      ),
-      // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    return MedicalHomeScreen();
   }
 }
