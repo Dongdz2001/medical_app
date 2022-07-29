@@ -26,7 +26,6 @@ class Medical {
     + Liều khởi đầu: 0.2 UI/kg/ngày 
     + Loại Insulin: Lantus
 """;
-
   get getYInsu22H => this.yInsu22H;
   void setYInsu22H(double value) => this.yInsu22H = """ 
 - Tiêm dưới da insulin tác dụng chậm :
@@ -199,8 +198,24 @@ class Medical {
     return -1;
   }
 
-  // Thiết lập trạng thái state ban đầu
+  String oldDisplayContent = "Đây là phương án đầu tiên";
+  void setOldDisplayContent() => this.oldDisplayContent =
+      "Phương án trước đó: \n ${this._content_display}";
+
+  // Thiết lập trạng thái state
   void setStateInitial() {
+    // print(this._content_display);
+    // if ((oldDisplayContent != this._content_display &&
+    //     this._content_display !=
+    //         """Phương án hiện tại không đạt yêu cầu \n nên thêm ${this.getSloveFailedContext}""" &&
+    //     this._content_display !=
+    //         "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN " &&
+    //     this._content_display !=
+    //         "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !" &&
+    //     this._content_display != "Bạn có đang tiêm Insulin không :  ")) {
+    //   oldDisplayContent = "Phương án trước đó: \n ";
+    //   oldDisplayContent += this._content_display;
+    // }
     this._content_display = "";
     if (_initialStateBool) {
       this._content_display = "${nInsulinAllTime} \n";
@@ -248,7 +263,6 @@ class Medical {
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
         this.isVisibleGlucozo = value["isVisibleGlucozo"];
-        this.flagTimer = value["flagTimer"];
         this.isVisibleYesNoo = value["isVisibleYesNoo"];
         this.setInitialStateBool = value["initialStateBool"];
         this.setLastStateBool = value["lastStateBool"];
@@ -262,40 +276,45 @@ class Medical {
                 .map((e) => e.toString())
                 .toList();
         this.setTimeStart = value["timeStart"].toString();
+        this.sloveFailedContext = value["sloveFailedContext"];
+        this.yInsu22H = value["yInsu22H"];
+        this.oldDisplayContent = value["oldDisplayContent"];
         setStateInitial();
       }
       return "done";
     });
   }
 
-  // Save data from
+  // Remove data
+  Future<void> removeDataBase(String s) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref(s);
+    await ref.remove();
+  }
 
   //check state display Object
   bool isVisibleGlucozo = false;
   bool isVisibleYesNoo = true;
-  bool flagTimer = true;
 
-  toJSONEncodable() {
-    Map<String, dynamic> subMedicalObject = new Map();
-    subMedicalObject['content_display'] = this._content_display;
-    subMedicalObject['namePD'] = this.namePD;
-    subMedicalObject['initialStateBool'] = this._initialStateBool;
-    subMedicalObject['listResultInjection'] = this._listResultInjection;
-    subMedicalObject['listTimeResultInjection'] = this._listTimeResultInjection;
-    subMedicalObject['lastStateBool'] = this._lastStateBool;
-    subMedicalObject['countUsedSolve'] = this.countUsedSolve;
-    subMedicalObject['isVisibleGlucozo'] = this.isVisibleGlucozo;
-    subMedicalObject['isVisibleYesNoo'] = this.isVisibleYesNoo;
-    subMedicalObject['flagTimer'] = this.flagTimer;
-  }
+  // toJSONEncodable() {
+  //   Map<String, dynamic> subthis = new Map();
+  //   subthis['content_display'] = this._content_display;
+  //   subthis['namePD'] = this.namePD;
+  //   subthis['initialStateBool'] = this._initialStateBool;
+  //   subthis['listResultInjection'] = this._listResultInjection;
+  //   subthis['listTimeResultInjection'] = this._listTimeResultInjection;
+  //   subthis['lastStateBool'] = this._lastStateBool;
+  //   subthis['countUsedSolve'] = this.countUsedSolve;
+  //   subthis['isVisibleGlucozo'] = this.isVisibleGlucozo;
+  //   subthis['isVisibleYesNoo'] = this.isVisibleYesNoo;
+  // }
 }
 
-class MedicalList {
-  List<Medical> items = [];
+// class MedicalList {
+//   List<Medical> items = [];
 
-  toJSONEncodable() {
-    return items.map((item) {
-      return item.toJSONEncodable();
-    }).toList();
-  }
-}
+//   toJSONEncodable() {
+//     return items.map((item) {
+//       return item.toJSONEncodable();
+//     }).toList();
+//   }
+// }

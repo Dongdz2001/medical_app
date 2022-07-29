@@ -51,22 +51,23 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    print("StateChange: ${state}");
-    if (state == AppLifecycleState.paused) {}
-    // _lastLifecycleState = state;
-    await reference.set({
-      "namePD": medicalObject.getNamePD,
-      "initialStateBool": medicalObject.getInitialStateBool,
-      "lastStateBool": medicalObject.getLastStateBool,
-      "listResultInjection": medicalObject.getListResultInjection,
-      "listTimeResultInjection": medicalObject.getListTimeResultInjection,
-      "isVisibleGlucozo": medicalObject.isVisibleGlucozo,
-      "isVisibleYesNoo": medicalObject.isVisibleYesNoo,
-      "flagTimer": medicalObject.flagTimer,
-      "countUsedSolve": medicalObject.getCountUsedSolve,
-      "timeStart": medicalObject.getTimeStart.toString()
-      //  "address": {"line1": "100 Mountain View"}
-    });
+    if (state == AppLifecycleState.paused) {
+      await reference.set({
+        "namePD": medicalObject.getNamePD,
+        "initialStateBool": medicalObject.getInitialStateBool,
+        "lastStateBool": medicalObject.getLastStateBool,
+        "listResultInjection": medicalObject.getListResultInjection,
+        "listTimeResultInjection": medicalObject.getListTimeResultInjection,
+        "isVisibleGlucozo": medicalObject.isVisibleGlucozo,
+        "isVisibleYesNoo": medicalObject.isVisibleYesNoo,
+        "countUsedSolve": medicalObject.getCountUsedSolve,
+        "timeStart": medicalObject.getTimeStart.toString(),
+        "sloveFailedContext": medicalObject.getSloveFailedContext,
+        "yInsu22H": medicalObject.getYInsu22H,
+        "oldDisplayContent": medicalObject.oldDisplayContent,
+        //  "address": {"line1": "100 Mountain View"}
+      });
+    }
   }
 
   @override
@@ -131,6 +132,18 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                     ],
                                   ),
                                 ),
+                                Positioned(
+                                    right: 30,
+                                    top: 20,
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.info,
+                                        color: Colors.grey[800],
+                                        size: 40,
+                                      ),
+                                      tooltip: medicalObject.oldDisplayContent,
+                                      onPressed: () {},
+                                    )),
                                 Positioned(
                                   top: 120,
                                   left: 10,
@@ -220,20 +233,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                                 : false;
                                                         medicalObject
                                                             .setStateInitial();
-                                                        Timer timer =
-                                                            Timer.periodic(
-                                                                const Duration(
-                                                                    seconds:
-                                                                        10),
-                                                                (Timer t) {
-                                                          if (medicalObject
-                                                              .flagTimer) {
-                                                            setState(() {
-                                                              medicalObject
-                                                                  .setStateInitial();
-                                                            });
-                                                          }
-                                                        });
                                                       });
                                                     });
                                                   },
@@ -428,6 +427,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
             }));
   }
 
+  // xử lý logic
   Future<void> _logicStateInfomation(String value) async {
     setState(() {
       medicalObject.addItemListResultInjectionItem(
@@ -447,27 +447,28 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
             if (medicalObject.getCountUsedSolve == 0) {
               medicalObject.set_Content_State_Check_Gluco_Failed(
                   medicalObject.getLastFaildedResultValue());
+              medicalObject.setOldDisplayContent();
               medicalObject.setContentdisplay =
                   """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
+
               medicalObject.upCountUsedSolve();
               medicalObject.resetInjectionValueDefault();
-              Future.delayed(const Duration(seconds: 10), (() {
+              Future.delayed(const Duration(seconds: 8), (() {
                 setState(() {
                   medicalObject.setStateInitial();
                 });
               }));
               // không tiêm Insulin không đạt mục tiêu lần 2
             } else if (medicalObject.getCountUsedSolve == 1) {
+              medicalObject.setOldDisplayContent();
               medicalObject.setContentdisplay =
                   "Phương án hiện tại không đạt yêu cầu \n chuyển sang 1 phương án khác !";
               medicalObject.downCountUsedSolve();
               medicalObject.setInitialStateBool =
                   !medicalObject.getInitialStateBool;
               medicalObject.resetInjectionValueDefault();
-              medicalObject.flagTimer = !medicalObject.flagTimer;
-              Future.delayed(const Duration(seconds: 10), (() {
+              Future.delayed(const Duration(seconds: 8), (() {
                 setState(() {
-                  medicalObject.flagTimer = !medicalObject.flagTimer;
                   medicalObject.setStateInitial();
                 });
               }));
@@ -479,28 +480,26 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
               if (medicalObject.getCountUsedSolve == 0) {
                 medicalObject.set_Content_State_Check_Gluco_Failed(
                     medicalObject.getLastFaildedResultValue());
+                medicalObject.setOldDisplayContent();
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.upCountUsedSolve();
-                medicalObject.flagTimer = !medicalObject.flagTimer;
                 medicalObject.resetInjectionValueDefault();
                 Future.delayed(const Duration(seconds: 6), (() {
-                  medicalObject.flagTimer = !medicalObject.flagTimer;
                   setState(() {
                     medicalObject.setStateInitial();
                   });
                 }));
               } else if (medicalObject.getCountUsedSolve == 1) {
+                medicalObject.setOldDisplayContent();
                 medicalObject.setContentdisplay =
                     "Phương án hiện tại không đạt yêu cầu \n cần tăng liều Lantus lên 2UI !";
                 medicalObject.downCountUsedSolve();
                 medicalObject.setYInsu22H(2);
                 medicalObject.setLastStateBool = true;
                 medicalObject.resetInjectionValueDefault();
-                medicalObject.flagTimer = !medicalObject.flagTimer;
                 Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
-                    medicalObject.flagTimer = !medicalObject.flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
@@ -511,27 +510,25 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                 medicalObject.upCountUsedSolve();
                 medicalObject.set_Content_State_Check_Gluco_Failed(
                     medicalObject.getLastFaildedResultValue());
+                medicalObject.setOldDisplayContent();
                 medicalObject.setContentdisplay =
                     """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
                 medicalObject.resetInjectionValueDefault();
-                medicalObject.flagTimer = !medicalObject.flagTimer;
                 Future.delayed(const Duration(seconds: 6), (() {
                   setState(() {
-                    medicalObject.flagTimer = !medicalObject.flagTimer;
                     medicalObject.setStateInitial();
                   });
                 }));
               } else if (medicalObject.getCountUsedSolve == 1) {
+                medicalObject.setOldDisplayContent();
                 medicalObject.setContentdisplay =
                     "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN ";
                 medicalObject.resetAllvalueIinitialStatedefaut();
-                setState(() {
-                  medicalObject.flagTimer = false;
-                });
               }
             }
           }
         } else if (medicalObject.getCheckPassInjection() == 1) {
+          medicalObject.setOldDisplayContent();
           medicalObject.setContentdisplay =
               "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !";
           medicalObject.resetInjectionValueDefault();
@@ -549,27 +546,27 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Future<void> insertData(String name, String gender, String age, String height,
       String weight, String glu) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/173");
-    await ref.set({
-      "name": "John",
-      "age": 18,
-      "address": {"line1": "100 Mountain View", "line2": "Đông đẹp trai"}
-    });
-    // String? key = databaseRef.child('Users').push().key;
-    // databaseRef.child('Users').child(key!).set({
-    //   'id': key,
-    //   'name': name,
-    //   'gender': gender,
-    //   'age': age,
-    //   'height': height,
-    //   'weight': weight,
-    //   'glu': glu
+    // await ref.set({
+    //   "name": "John",
+    //   "age": 18,
+    //   "address": {"line1": "100 Mountain View", "line2": "Đông đẹp trai"}
     // });
-    // nameController.clear();
-    // genderController.clear();
-    // ageController.clear();
-    // heightController.clear();
-    // weightController.clear();
-    // gluController.clear();
+    String? key = ref.push().key;
+    await ref.child('Users').child(key!).set({
+      'id': key,
+      'name': name,
+      'gender': gender,
+      'age': age,
+      'height': height,
+      'weight': weight,
+      'glu': glu
+    });
+    nameController.clear();
+    genderController.clear();
+    ageController.clear();
+    heightController.clear();
+    weightController.clear();
+    gluController.clear();
     final reference = FirebaseDatabase.instance.ref();
     final snapshot = await reference.child('Medicals/medical').get();
     var value = Map<String, dynamic>.from(snapshot.value as Map);
