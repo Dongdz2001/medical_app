@@ -245,6 +245,25 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                     ),
                                   ),
                                 ),
+                                Positioned(
+                                  top: 20,
+                                  left: 10,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.restart_alt_rounded,
+                                      size: 35,
+                                    ),
+                                    tooltip: 'restart',
+                                    onPressed: () {
+                                      setState(() {
+                                        medicalObject
+                                            .removeDataBase("Medicals/medical");
+                                        medicalObject
+                                            .resetAllvalueIinitialStatedefaut();
+                                      });
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -531,6 +550,11 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
           medicalObject.setOldDisplayContent();
           medicalObject.setContentdisplay =
               "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !";
+          Future.delayed(const Duration(seconds: 6), (() {
+            setState(() {
+              medicalObject.setStateInitial();
+            });
+          }));
           medicalObject.resetInjectionValueDefault();
         }
       }

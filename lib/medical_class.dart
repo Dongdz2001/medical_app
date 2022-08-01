@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:async/async.dart';
 import 'package:medical_app/controller_time.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -181,6 +183,13 @@ class Medical {
     if (getCountUsedSolve == 1) {
       downCountUsedSolve();
     }
+    this._initialStateBool = false;
+    this._lastStateBool = false;
+    this.isVisibleGlucozo = false;
+    this.isVisibleYesNoo = true;
+    this.countUsedSolve = 0;
+    this.oldDisplayContent = "Đây là phương án đầu tiên";
+    this._content_display = "Bạn có đang tiêm Insulin không :  ";
   }
 
   // kiểm tra xem có đạt mục tiêu số lần đạt không
