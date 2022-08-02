@@ -72,6 +72,9 @@ class Medical {
   get getLastStateBool => this._lastStateBool;
   set setLastStateBool(bool value) => this._lastStateBool = value;
 
+  // check restart app
+  bool flagRestart = true;
+
   // số lần sử dụng 1 phương án
   int countUsedSolve = 0;
   get getCountUsedSolve => this.countUsedSolve;
@@ -213,18 +216,6 @@ class Medical {
 
   // Thiết lập trạng thái state
   void setStateInitial() {
-    // print(this._content_display);
-    // if ((oldDisplayContent != this._content_display &&
-    //     this._content_display !=
-    //         """Phương án hiện tại không đạt yêu cầu \n nên thêm ${this.getSloveFailedContext}""" &&
-    //     this._content_display !=
-    //         "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN " &&
-    //     this._content_display !=
-    //         "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !" &&
-    //     this._content_display != "Bạn có đang tiêm Insulin không :  ")) {
-    //   oldDisplayContent = "Phương án trước đó: \n ";
-    //   oldDisplayContent += this._content_display;
-    // }
     this._content_display = "";
     if (_initialStateBool) {
       this._content_display = "${nInsulinAllTime} \n";
@@ -288,7 +279,10 @@ class Medical {
         this.sloveFailedContext = value["sloveFailedContext"];
         this.yInsu22H = value["yInsu22H"];
         this.oldDisplayContent = value["oldDisplayContent"];
-        setStateInitial();
+        this.flagRestart = value["flagRestart"];
+        this.flagRestart
+            ? this._content_display = "Bạn có đang tiêm Insulin không :  "
+            : setStateInitial();
       }
       return "done";
     });

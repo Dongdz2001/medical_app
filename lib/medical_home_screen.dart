@@ -51,7 +51,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.paused) {
+    if (state == AppLifecycleState.paused &&
+        medicalObject.flagRestart == false) {
       await reference.set({
         "namePD": medicalObject.getNamePD,
         "initialStateBool": medicalObject.getInitialStateBool,
@@ -65,6 +66,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "sloveFailedContext": medicalObject.getSloveFailedContext,
         "yInsu22H": medicalObject.getYInsu22H,
         "oldDisplayContent": medicalObject.oldDisplayContent,
+        "flagRestart": medicalObject.flagRestart,
         //  "address": {"line1": "100 Mountain View"}
       });
     }
@@ -208,6 +210,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                     [Colors.green]
                                                   ],
                                                   onToggle: (index) {
+                                                    medicalObject.flagRestart =
+                                                        false;
                                                     medicalObject.setTimeStart =
                                                         DateTime.now()
                                                             .toString()
@@ -254,14 +258,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                       size: 35,
                                     ),
                                     tooltip: 'restart',
-                                    onPressed: () {
-                                      setState(() {
-                                        medicalObject
-                                            .removeDataBase("Medicals/medical");
-                                        medicalObject
-                                            .resetAllvalueIinitialStatedefaut();
-                                      });
-                                    },
+                                    onPressed: () => _showMyDialog(),
                                   ),
                                 ),
                               ],
@@ -542,7 +539,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                 medicalObject.setOldDisplayContent();
                 medicalObject.setContentdisplay =
                     "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN ";
-                medicalObject.resetAllvalueIinitialStatedefaut();
+                // medicalObject.resetAllvalueIinitialStatedefaut();
               }
             }
           }
@@ -606,5 +603,44 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     } else {
       print('No data available.');
     }
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Khôi phục mặc định'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Dữ liệu sẽ bị xóa toàn bộ về trạng thái ban đầu '),
+                Text('Bạn có chắc chắn không ?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                setState(() {
+                  medicalObject.flagRestart = true;
+                  medicalObject.removeDataBase("Medicals/medical");
+                  medicalObject.resetAllvalueIinitialStatedefaut();
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
