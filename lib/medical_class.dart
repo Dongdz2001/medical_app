@@ -126,8 +126,12 @@ class Medical {
     for (var i = 0; i < 8; i++) {
       if (_listResultInjection[i] + 1.0 == 0) {
         _listResultInjection[i] = double.parse(value);
-        _listTimeResultInjection[i] =
-            DateTime.now().toString().substring(0, 16);
+        String s = DateTime.now().toString().substring(0, 16);
+        List<String> listDH = s.split(' ');
+        List<String> listDDMMYY = listDH[0].split('-');
+        String result =
+            "${listDH[1]}   ${listDDMMYY[2]}/${listDDMMYY[1]}/${listDDMMYY[0]}";
+        _listTimeResultInjection[i] = result;
         break;
       }
     }
@@ -279,7 +283,7 @@ class Medical {
         this.sloveFailedContext = value["sloveFailedContext"];
         this.yInsu22H = value["yInsu22H"];
         this.oldDisplayContent = value["oldDisplayContent"];
-        this.flagRestart = value["flagRestart"];
+        this.flagRestart = value["flagRestart"] ?? false;
         this.flagRestart
             ? this._content_display = "Bạn có đang tiêm Insulin không :  "
             : setStateInitial();

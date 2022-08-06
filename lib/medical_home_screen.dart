@@ -70,6 +70,9 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         //  "address": {"line1": "100 Mountain View"}
       });
     }
+    if (state != AppLifecycleState.detached) {
+      setState(() => medicalObject.setStateInitial());
+    }
   }
 
   @override
