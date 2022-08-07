@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medical_app/history_screen.dart';
 import 'package:medical_app/medical_class.dart';
+import 'package:medical_app/profile_info.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:toast/toast.dart';
@@ -24,14 +25,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Medical medicalObject = Medical();
   // late AppLifecycleState _lastLifecycleState;
   final TextEditingController _editingController = TextEditingController();
-
-  // new add Controller HP
-  final nameController = TextEditingController();
-  final genderController = TextEditingController();
-  final ageController = TextEditingController();
-  final heightController = TextEditingController();
-  final weightController = TextEditingController();
-  final gluController = TextEditingController();
+  // get instancr firebase database
   final reference = FirebaseDatabase.instance.ref("Medicals/medical");
 
   @override
@@ -79,6 +73,15 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Widget build(BuildContext context) {
     ToastContext().init(context);
     return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Color(0xff091a31),
+          leading: IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: const BackButtonIcon(),
+          ),
+        ),
         body: FutureBuilder(
             future: medicalObject.readDataRealTimeDB("Medicals/medical"),
             builder: (context, snapshot) {
@@ -101,6 +104,88 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
+                          // profile thông tin bệnh nhân
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: 90,
+                                width: 90,
+                                child: CircleAvatar(
+                                  radius: 48, // Image radius
+                                  backgroundImage: NetworkImage(
+                                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqkKsJE9otzQr3RAnkLRCThzaxfoJ0_6W2sg&usqp=CAU'),
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(left: 10, top: 5),
+                                height: 100,
+                                width: widthDevideMethod(0.6),
+                                alignment: Alignment.topLeft,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text('Nguyễn Kiều Anh'),
+                                    Text(
+                                      ' Tiểu Đường , 27 tuổi , Nữ giới',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: heightDevideMethod(0.012),
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: widthDevideMethod(0.03),
+                                        ),
+                                        // xem chi tiết thông tin bệnh nhân
+                                        SizedBox(
+                                          height: 30,
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ProfileInfo()));
+                                              },
+                                              child: Text('Xem chi tiết'),
+                                              style: ElevatedButton.styleFrom(
+                                                primary: Color(0xff091a31),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                              )),
+                                        ),
+                                        SizedBox(
+                                          width: widthDevideMethod(0.05),
+                                        ),
+                                        //  Nhắn tin với bệnh nhân
+                                        SizedBox(
+                                          height: 30,
+                                          child: ElevatedButton(
+                                              onPressed: () {},
+                                              child: Text('Nhắn tin'),
+                                              style: ElevatedButton.styleFrom(
+                                                primary: Color(0xff091a31),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                              )),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Logic bác sĩ
                           Container(
                             padding: const EdgeInsets.only(bottom: 20, top: 20),
                             child: Text(
@@ -315,96 +400,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                             ),
                           ),
                           SizedBox(height: heightDevideMethod(0.02)),
-                          Container(
-                            color: Colors.amberAccent,
-                            child: const Text(
-                              'Thông tin bệnh nhân: ',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                          ),
-
-                          // Add information of HP
-                          Column(
-                            children: [
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: nameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Name',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: genderController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Giới tính',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: ageController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Năm Sinh',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: heightController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Chiều cao',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: weightController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Cân nặng',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              TextFormField(
-                                  controller: gluController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Glu mmol/l',
-                                    border: OutlineInputBorder(),
-                                  )),
-                              SizedBox(
-                                height: heightDevideMethod(0.02),
-                              ),
-                              OutlinedButton(
-                                onPressed: () {
-                                  if (nameController.text.isNotEmpty &&
-                                      ageController.text.isNotEmpty &&
-                                      genderController.text.isNotEmpty &&
-                                      heightController.text.isNotEmpty &&
-                                      weightController.text.isNotEmpty &&
-                                      gluController.text.isNotEmpty) {
-                                    insertData(
-                                        nameController.text,
-                                        genderController.text,
-                                        ageController.text,
-                                        heightController.text,
-                                        weightController.text,
-                                        gluController.text);
-                                  }
-                                },
-                                child:
-                                    Text('Add', style: TextStyle(fontSize: 18)),
-                              )
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -435,14 +430,23 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                   )
                 ];
               }
-              return Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: children,
-                  ),
-                ),
-              );
+              return snapshot.hasData
+                  ? SingleChildScrollView(
+                      child: SafeArea(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: children,
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: children,
+                        ),
+                      ),
+                    );
             }));
   }
 
@@ -564,48 +568,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   // show toast infomation
   void showToast(String msg, {int? duration, int? gravity}) {
     Toast.show(msg, duration: duration, gravity: gravity);
-  }
-
-  //  Insert Data of Hoang Phan
-  Future<void> insertData(String name, String gender, String age, String height,
-      String weight, String glu) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref("users/173");
-    // await ref.set({
-    //   "name": "John",
-    //   "age": 18,
-    //   "address": {"line1": "100 Mountain View", "line2": "Đông đẹp trai"}
-    // });
-    String? key = ref.push().key;
-    await ref.child('Users').child(key!).set({
-      'id': key,
-      'name': name,
-      'gender': gender,
-      'age': age,
-      'height': height,
-      'weight': weight,
-      'glu': glu
-    });
-    nameController.clear();
-    genderController.clear();
-    ageController.clear();
-    heightController.clear();
-    weightController.clear();
-    gluController.clear();
-    final reference = FirebaseDatabase.instance.ref();
-    final snapshot = await reference.child('Medicals/medical').get();
-    var value = Map<String, dynamic>.from(snapshot.value as Map);
-    var title = value["listResultInjection"];
-    if (snapshot.exists) {
-      // final snapTemp = await reference.child('users/123/address').get();
-      // var value2 = Map<String, dynamic>.from(snapTemp.value as Map);
-      List<dynamic> listName = value["listResultInjection"];
-      List<int> listInt = listName.map((e) => e as int).toList();
-      List<double> listDouble = listInt.map((e) => e.toDouble()).toList();
-      print(listInt is List<int>);
-      print(listDouble is List<double>);
-    } else {
-      print('No data available.');
-    }
   }
 
   Future<void> _showMyDialog() async {
