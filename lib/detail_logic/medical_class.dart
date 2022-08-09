@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:async/async.dart';
-import 'package:medical_app/controller_time.dart';
+import 'package:medical_app/detail_logic/controller_time.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:async';
@@ -289,6 +289,27 @@ class Medical {
             : setStateInitial();
       }
       return "done";
+    });
+  }
+
+  // save data on Firebase
+  Future<void> saveData(String s) async {
+    final reference = FirebaseDatabase.instance.ref(s);
+    await reference.set({
+      "namePD": this.getNamePD,
+      "initialStateBool": this.getInitialStateBool,
+      "lastStateBool": this.getLastStateBool,
+      "listResultInjection": this.getListResultInjection,
+      "listTimeResultInjection": this.getListTimeResultInjection,
+      "isVisibleGlucozo": this.isVisibleGlucozo,
+      "isVisibleYesNoo": this.isVisibleYesNoo,
+      "countUsedSolve": this.getCountUsedSolve,
+      "timeStart": this.getTimeStart.toString(),
+      "sloveFailedContext": this.getSloveFailedContext,
+      "yInsu22H": this.getYInsu22H,
+      "oldDisplayContent": this.oldDisplayContent,
+      "flagRestart": this.flagRestart,
+      //  "address": {"line1": "100 Mountain View"}
     });
   }
 

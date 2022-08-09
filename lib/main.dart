@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medical_app/home_screen.dart';
-import 'package:medical_app/medical_home_screen.dart';
-import 'package:medical_app/sizeDevide.dart';
+import 'package:medical_app/authentication/login/login.dart';
+import 'package:medical_app/detail_logic/medical_home_screen.dart';
+import 'package:medical_app/detail_logic/sizeDevide.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
@@ -70,6 +70,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return MedicalHomeScreen();
+    return Login();
   }
 }

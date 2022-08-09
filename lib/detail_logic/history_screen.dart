@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:medical_app/medical_class.dart';
-import 'package:medical_app/sizeDevide.dart';
+import 'package:medical_app/detail_logic/medical_class.dart';
+import 'package:medical_app/detail_logic/sizeDevide.dart';
 
 class HistoryScreen extends StatefulWidget {
   final Medical medical;

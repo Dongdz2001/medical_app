@@ -2,18 +2,34 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:medical_app/sizeDevide.dart';
+import 'package:medical_app/authentication/login/home_screen.dart';
+import 'package:medical_app/detail_logic/sizeDevide.dart';
+import 'package:medical_app/manage_patient/patient.dart';
 
 class ProfileInfo extends StatefulWidget {
-  const ProfileInfo({Key? key}) : super(key: key);
-
+  final Object? patienTemp;
+  const ProfileInfo({Key? key, required this.patienTemp}) : super(key: key);
   @override
   State<ProfileInfo> createState() => _ProfileInfoState();
 }
 
 class _ProfileInfoState extends State<ProfileInfo> {
+  late Patien patienTemp;
   File? _image;
   final ImagePicker _picker = ImagePicker();
+  TextEditingController diseaseControler = TextEditingController();
+  TextEditingController nameControler = TextEditingController();
+  TextEditingController identityCardControler = TextEditingController();
+  TextEditingController genderController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    patienTemp = widget.patienTemp! as Patien;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +40,29 @@ class _ProfileInfoState extends State<ProfileInfo> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(top: 15, right: 20),
-            child: const Text('Lưu'),
+            child: TextButton(
+              child: const Text('Lưu'),
+              onPressed: () {
+                print(
+                    "information: ${diseaseControler.text} - ${nameControler.text} - ${identityCardControler.text} - ${genderController.text} - ${dateController.text} - ${phoneController.text}");
+                patienTemp.name = nameControler.text;
+                patienTemp.gender = genderController.text == ''
+                    ? 'unknow'
+                    : genderController.text;
+                patienTemp.birthday = dateController.text;
+                try {
+                  patienTemp.veryfileID =
+                      int.parse(identityCardControler.text.toString());
+                } catch (e) {
+                  print('casting error');
+                }
+                patienTemp.phoneNum = phoneController.text;
+                patienTemp.nameDisease = diseaseControler.text;
+                patienTemp.old = _caculateOld(dateController.text);
+
+                Navigator.pop(context, true);
+              },
+            ),
           ),
         ],
       ),
@@ -79,13 +117,25 @@ class _ProfileInfoState extends State<ProfileInfo> {
                 ),
               ),
               SizedBox(height: heightDevideMethod(0.02)),
+              buildUserInfoDisplay(diseaseControler, 'Điều trị bệnh',
+                  patienTemp.nameDisease.toString(), 'Tiểu Đường'),
+              buildUserInfoDisplay(nameControler, 'Tên bệnh nhân',
+                  patienTemp.getName, 'Nguyễn Kièu Anh'),
               buildUserInfoDisplay(
-                  'Tên bệnh nhân', 'Nguyễn Kièu Anh', 'Nguyễn Kièu Anh'),
+                  identityCardControler,
+                  'CMMN/CCCD',
+                  '${patienTemp.getID}',
+                  '22210003857637',
+                  TextInputType.number),
+              buildUserInfoDisplay(phoneController, 'Số điện thoại',
+                  patienTemp.getPhoneNum, '0348807912', TextInputType.number),
               buildUserInfoDisplay(
-                  'CMMN/CCCD', '22210003857637', '22210003857637'),
-              buildUserInfoDisplay('Số Điện Thoại', '0348807912', '0348807912'),
-              buildUserInfoDisplay('Giới Tính', 'Nữ', 'Nữ'),
-              buildUserInfoDisplay('Ngày Sinh', '04/01/2001', '04/01/2001'),
+                  genderController,
+                  'Giới Tính',
+                  '${patienTemp.gender == 'unknow' ? '' : patienTemp.gender.toString()}',
+                  'Nữ'),
+              buildUserInfoDisplay(dateController, 'Ngày Sinh',
+                  patienTemp.getBirthday, '04/01/2001', TextInputType.datetime),
             ],
           ),
         ),
@@ -94,8 +144,9 @@ class _ProfileInfoState extends State<ProfileInfo> {
   }
 
   // Widget builds the display item with the proper formatting to display the user's info
-  Widget buildUserInfoDisplay(String title, String value, String hint) {
-    TextEditingController editControler = TextEditingController();
+  Widget buildUserInfoDisplay(TextEditingController editControler, String title,
+      String value, String hint,
+      [TextInputType textInput = TextInputType.text]) {
     editControler.text = value;
     return Padding(
         padding: EdgeInsets.only(bottom: 10, left: 20),
@@ -111,6 +162,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
               ),
             ),
             TextFormField(
+              keyboardType: textInput,
               controller: editControler,
               cursorColor: Colors.black,
               decoration: new InputDecoration(
@@ -133,7 +185,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
 
   Future<void> _pickImageCamera() async {
     try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final image = await ImagePicker().pickImage(source: ImageSource.camera);
       if (image != null) {
         return;
       }
@@ -156,5 +208,16 @@ class _ProfileInfoState extends State<ProfileInfo> {
     } else {
       // _handleError(response.exception);
     }
+  }
+
+  int _caculateOld(String dateStr) {
+    // DateTime dateTime = DateTime.now().year;
+    try {
+      return DateTime.now().year -
+          int.parse(dateStr.substring(dateStr.length - 4));
+    } catch (e) {
+      print("Casting date error");
+    }
+    return -1;
   }
 }
