@@ -110,9 +110,6 @@ class _LoginState extends State<Login> {
                               fontSize: 15,
                             ),
                           ),
-                          onSubmitted: (value) {
-                            _email.text = value;
-                          },
                         ),
                       ),
                       // enter password
@@ -153,9 +150,6 @@ class _LoginState extends State<Login> {
                               },
                             ),
                           ),
-                          onSubmitted: (value) {
-                            _password.text = value;
-                          },
                         ),
                       ),
                       // button login

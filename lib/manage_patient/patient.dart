@@ -82,35 +82,35 @@ class Patien {
   }
 
   // read Data from realTime
-  // AsyncMemoizer<String> memCache = AsyncMemoizer();
+  AsyncMemoizer<String> memCache = AsyncMemoizer();
   // Read data from RealTime Database
   Future<String> readDataRealTimeDB(String s) async {
-    // return memCache.runOnce(() async {
-    final refer = FirebaseDatabase.instance.ref();
-    // await refer.child(s).onValue.listen((event) {}
-    final snapshot = await refer.child(s).get();
-    if (snapshot.exists) {
-      var value = Map<String, dynamic>.from(snapshot.value as Map);
+    return memCache.runOnce(() async {
+      final refer = FirebaseDatabase.instance.ref();
+      // await refer.child(s).onValue.listen((event) {}
+      final snapshot = await refer.child(s).get();
+      if (snapshot.exists) {
+        var value = Map<String, dynamic>.from(snapshot.value as Map);
 
-      // get value from firebase
-      this.name = value["name"];
-      this.old = value["old"];
-      this.gender = value["gender"];
-      this.address = value["address"];
-      this.regimen = value["regimen"];
-      this.veryfileID = value["veryfileID"];
-      this.nameDisease = value["nameDisease"];
-      this.phoneNum = value["phoneNum"];
-      this.birthday = value["birthday"];
-      this.keyLogin = value["keyLogin"];
-      if (value["Medical"] != null) {
-        if (objRegimen is Medical) {
-          (objRegimen as Medical).readDataRealTimeDB("${s}/Medical");
+        // get value from firebase
+        this.name = value["name"];
+        this.old = value["old"];
+        this.gender = value["gender"];
+        this.address = value["address"];
+        this.regimen = value["regimen"];
+        this.veryfileID = value["veryfileID"];
+        this.nameDisease = value["nameDisease"];
+        this.phoneNum = value["phoneNum"];
+        this.birthday = value["birthday"];
+        this.keyLogin = value["keyLogin"];
+        if (value["Medical"] != null) {
+          if (objRegimen is Medical) {
+            (objRegimen as Medical).readDataRealTimeDB("${s}/Medical");
+          }
         }
       }
-    }
-    return "done";
-    // });
+      return "done";
+    });
   }
 
   // Contructor patien

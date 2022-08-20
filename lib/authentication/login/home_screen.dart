@@ -20,8 +20,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with WidgetsBindingObserver {
   late String keyLogin;
   late String? myEmail = '';
-  int number = -1;
-  int back_steps_select = -1;
   final ScrollController _controllerScroll = ScrollController();
   PageController _controllerPage = PageController();
   bool onLastPage = false;
@@ -77,54 +75,54 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: const Color(0xff091a31),
-            actions: [
-              PopupMenuButton(
-                  icon: const Icon(Icons.menu),
-                  itemBuilder: (context) => [
-                        PopupMenuItem(
-                          child: InkWell(
-                            child: const Text("Profile"),
-                            onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (context) => const FormScreen()),
-                              // );
-                              // ;
-                            },
-                          ),
+          backgroundColor: const Color(0xff091a31),
+          actions: [
+            PopupMenuButton(
+                icon: const Icon(Icons.menu),
+                itemBuilder: (context) => [
+                      PopupMenuItem(
+                        child: InkWell(
+                          child: const Text("Profile"),
+                          onTap: () {
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //       builder: (context) => const FormScreen()),
+                            // );
+                            // ;
+                          },
                         ),
-                      ]),
-            ],
-            // Mũi tên quay lại màn hình chính
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                // Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => Login()),
-                // );
-                keyLogin = "";
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => Login()),
-                    (Route<dynamic> route) => false);
-              },
-              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-            )
+                      ),
+                    ]),
+          ],
+          // Mũi tên quay lại màn hình chính
+          // leading: IconButton(
+          //   icon: const Icon(Icons.arrow_back),
+          //   onPressed: () async {
+          //     await FirebaseAuth.instance.signOut();
+          //     // Navigator.pushReplacement(
+          //     //   context,
+          //     //   MaterialPageRoute(builder: (context) => Login()),
+          //     // );
+          //     keyLogin = "";
+          //     Navigator.pushAndRemoveUntil(
+          //         context,
+          //         MaterialPageRoute(
+          //             builder: (BuildContext context) => Login()),
+          //         (Route<dynamic> route) => false);
+          //   },
+          //   tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+          // )
 
-            // centerTitle: true,
-            // title: Container(
-            //   width: 45,
-            //   height: 45,
-            //   child: const Icon(Icons.person),
-            //   decoration: const BoxDecoration(
-            //       shape: BoxShape.circle, color: Colors.white24),
-            // ),
-            ),
+          // centerTitle: true,
+          // title: Container(
+          //   width: 45,
+          //   height: 45,
+          //   child: const Icon(Icons.person),
+          //   decoration: const BoxDecoration(
+          //       shape: BoxShape.circle, color: Colors.white24),
+          // ),
+        ),
         // List hiển thị tên bệnh nhân và phác đồ
         body: FutureBuilder(
             future: manager.readDataRealTimeDBManager(),
@@ -170,13 +168,18 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                                           "${keyLogin}/Users/${patien.getID}");
 
                                       setState(() {
-                                        if (back_steps_select == -1) {
-                                          back_steps_select = index;
-                                          manager.setSelect(back_steps_select);
-                                        } else if (back_steps_select != index) {
-                                          manager.setSelect(back_steps_select);
+                                        if (manager.back_steps_select == -1) {
+                                          manager.back_steps_select = index;
+                                          manager.setSelect(
+                                              manager.back_steps_select);
+                                        } else if (manager.back_steps_select !=
+                                            index) {
+                                          manager.setSelect(
+                                              manager.back_steps_select);
                                           manager.setSelect(index);
-                                          back_steps_select = index;
+                                          manager.back_steps_select = index;
+                                          print(
+                                              "backSteps= ${manager.back_steps_select}");
                                         }
 
                                         _navigateAndDisplaySelection(
@@ -349,8 +352,6 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                                                 manager.addListInformation(
                                                     _idController.text,
                                                     _nameController.text);
-                                                number = manager
-                                                    .listInfomation.length;
 
                                                 Patien patien = Patien(
                                                     name: _nameController.text,
@@ -373,10 +374,11 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                                                       "${widget.keyLogin!}");
                                               await ref.remove();
                                               setState(() {
-                                                if (back_steps_select != -1)
+                                                if (manager.back_steps_select !=
+                                                    -1)
                                                   manager.setSelecteDefaut();
-                                                back_steps_select = -1;
-                                                number = 0;
+                                                manager.back_steps_select = -1;
+
                                                 manager.setListInforDefault();
                                               });
                                             },
@@ -447,6 +449,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
         MaterialPageRoute(
             builder: ((context) => MedicalHomeScreen(
                   patienTemp: patien,
+                  index: index,
                 ))));
     try {
       if (result) {

@@ -18,11 +18,11 @@ import 'controller_time.dart';
 
 class MedicalHomeScreen extends StatefulWidget {
   final Patien? patienTemp;
+  final int? index;
 
-  const MedicalHomeScreen({
-    Key? key,
-    required this.patienTemp,
-  }) : super(key: key);
+  const MedicalHomeScreen(
+      {Key? key, required this.patienTemp, required this.index})
+      : super(key: key);
 
   @override
   State<MedicalHomeScreen> createState() => _MedicalHomeScreenState();
@@ -32,6 +32,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     with WidgetsBindingObserver {
   late Medical medicalObject;
   late Patien patien;
+  late int index;
   // late AppLifecycleState _lastLifecycleState;
   final TextEditingController _editingController = TextEditingController();
   final TextEditingController _enterWeightController = TextEditingController();
@@ -43,6 +44,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     // TODO: implement initState
     super.initState();
     patien = widget.patienTemp!;
+    index = widget.index!;
     medicalObject = widget.patienTemp?.getObjRegimen as Medical;
     reference = FirebaseDatabase.instance.ref(
         "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
@@ -168,7 +170,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                             child: ElevatedButton(
                                                 onPressed: () =>
                                                     _navigateAndDisplaySelection(
-                                                        context),
+                                                        context, index),
                                                 child: Text('Xem chi tiết'),
                                                 style: ElevatedButton.styleFrom(
                                                   primary: Color(0xff091a31),
@@ -861,14 +863,18 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   }
 
   // callback when change infomation
-  Future<void> _navigateAndDisplaySelection(BuildContext context) async {
+  Future<void> _navigateAndDisplaySelection(
+      BuildContext context, int index) async {
     // Navigator.push returns a Future that completes after calling
     // Navigator.pop on the Selection Screen.
     final result = await Navigator.push(
       context,
       // Create the SelectionScreen in the next step.
       MaterialPageRoute(
-          builder: (context) => ProfileInfo(patienTemp: widget.patienTemp)),
+          builder: (context) => ProfileInfo(
+                patienTemp: widget.patienTemp,
+                index: index,
+              )),
     );
     try {
       if (result) {

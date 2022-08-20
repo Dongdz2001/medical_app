@@ -15,6 +15,7 @@ class Manager {
 
   List<String> listInfomation = [];
   List<bool> listSelected = [];
+  int back_steps_select = -1;
 
   // login account
   String? keyLogin = "none";
@@ -56,6 +57,7 @@ class Manager {
     await reference.update({
       "listInfo": this.listInfomation,
       "listSelected": this.listSelected,
+      "back_steps_select": this.back_steps_select
     });
   }
 
@@ -63,6 +65,15 @@ class Manager {
     final reference = FirebaseDatabase.instance.ref('${keyLogin}');
     await reference.update({
       "listSelected": this.listSelected,
+    });
+  }
+
+  Future<void> upDateNameIndexListInfo(int index, String name) async {
+    this.listInfomation[index] =
+        '${this.listInfomation[index].substring(0, 12)}_(${name})';
+    final reference = FirebaseDatabase.instance.ref('${keyLogin}');
+    await reference.update({
+      "listInfo": this.listInfomation,
     });
   }
 
@@ -123,29 +134,33 @@ class Manager {
   //   return "done";
   // }
 
-  // AsyncMemoizer<String> memCache = AsyncMemoizer();
+  AsyncMemoizer<String> memCache = AsyncMemoizer();
   Future<String> readDataRealTimeDBManager() async {
-    // return memCache.runOnce(() async {
-    final refer = FirebaseDatabase.instance.ref();
-    // await refer.child(s).onValue.listen((event) {}
-    final snapshot = await refer.child(this.keyLogin!.toString()).get();
-    if (snapshot.exists) {
-      var value = Map<String, dynamic>.from(snapshot.value as Map);
-      if (value["listInfo"] != null) {
-        this.listInfomation = (value["listInfo"] as List<dynamic>)
-            .map((e) => e.toString())
-            .toList();
-        this.listSelected = (value["listSelected"] as List<dynamic>)
-            .map((e) => (e as bool))
-            .toList();
+    return memCache.runOnce(() async {
+      final refer = FirebaseDatabase.instance.ref();
+      // await refer.child(s).onValue.listen((event) {}
+      final snapshot = await refer.child(this.keyLogin!.toString()).get();
+      if (snapshot.exists) {
+        var value = Map<String, dynamic>.from(snapshot.value as Map);
+        if (value["back_steps_select"] != null) {
+          this.back_steps_select = value["back_steps_select"];
+        }
+        if (value["listInfo"] != null) {
+          this.listInfomation = (value["listInfo"] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList();
+          this.listSelected = (value["listSelected"] as List<dynamic>)
+              .map((e) => (e as bool))
+              .toList();
+        } else {
+          print("listInfo was Null");
+        }
       } else {
-        print("listInfo was Null");
+        this.listInfomation = [];
+        this.listSelected = [];
+        this.back_steps_select = -1;
       }
-    } else {
-      this.listInfomation = [];
-      this.listSelected = [];
-    }
-    return "done";
-    // });
+      return "done";
+    });
   }
 }

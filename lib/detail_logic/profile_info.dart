@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:medical_app/authentication/login/home_screen.dart';
 import 'package:medical_app/detail_logic/sizeDevide.dart';
+import 'package:medical_app/manage_patient/manager.dart';
 import 'package:medical_app/manage_patient/patient.dart';
 
 class ProfileInfo extends StatefulWidget {
   final Object? patienTemp;
-  const ProfileInfo({Key? key, required this.patienTemp}) : super(key: key);
+  final int? index;
+  const ProfileInfo({Key? key, required this.patienTemp, required this.index})
+      : super(key: key);
   @override
   State<ProfileInfo> createState() => _ProfileInfoState();
 }
 
 class _ProfileInfoState extends State<ProfileInfo> {
   late Patien patienTemp;
+  late int index;
   File? _image;
   final ImagePicker _picker = ImagePicker();
   TextEditingController diseaseControler = TextEditingController();
@@ -29,6 +33,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
     // TODO: implement initState
     super.initState();
     patienTemp = widget.patienTemp! as Patien;
+    index = widget.index!;
   }
 
   @override
@@ -43,8 +48,8 @@ class _ProfileInfoState extends State<ProfileInfo> {
             child: TextButton(
               child: const Text('Lưu'),
               onPressed: () {
-                print(
-                    "information: ${diseaseControler.text} - ${nameControler.text} - ${identityCardControler.text} - ${genderController.text} - ${dateController.text} - ${phoneController.text}");
+                // print(
+                //     "information: ${diseaseControler.text} - ${nameControler.text} - ${identityCardControler.text} - ${genderController.text} - ${dateController.text} - ${phoneController.text}");
                 patienTemp.name = nameControler.text;
                 patienTemp.gender = genderController.text == ''
                     ? 'unknow'
@@ -59,6 +64,10 @@ class _ProfileInfoState extends State<ProfileInfo> {
                 patienTemp.nameDisease = diseaseControler.text;
                 patienTemp.old = _caculateOld(dateController.text);
                 patienTemp.saveDataPatient(patienTemp.keyLogin!, false);
+
+                Manager(key: patienTemp.keyLogin!)
+                    .upDateNameIndexListInfo(index, patienTemp.name!);
+
                 Navigator.pop(context, true);
               },
             ),
@@ -124,8 +133,9 @@ class _ProfileInfoState extends State<ProfileInfo> {
                   identityCardControler,
                   'CMMN/CCCD',
                   '${patienTemp.getID}',
-                  '22210003857637',
-                  TextInputType.number),
+                  '001201007111',
+                  TextInputType.number,
+                  false),
               buildUserInfoDisplay(phoneController, 'Số điện thoại',
                   patienTemp.getPhoneNum, '0348807912', TextInputType.number),
               buildUserInfoDisplay(
@@ -145,7 +155,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
   // Widget builds the display item with the proper formatting to display the user's info
   Widget buildUserInfoDisplay(TextEditingController editControler, String title,
       String value, String hint,
-      [TextInputType textInput = TextInputType.text]) {
+      [TextInputType textInput = TextInputType.text, bool enable = true]) {
     editControler.text = value;
     return Padding(
         padding: EdgeInsets.only(bottom: 10, left: 20),
@@ -161,6 +171,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
               ),
             ),
             TextFormField(
+              enabled: enable,
               keyboardType: textInput,
               controller: editControler,
               cursorColor: Colors.black,
