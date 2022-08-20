@@ -46,8 +46,13 @@ class FireBaseHelper implements AuthenService {
             verificationId: _verificationCode, smsCode: pinCode))
         .then((value) async {
       if (value.user != null) {
-        Navigator.pushAndRemoveUntil(context,
-            MaterialPageRoute(builder: (context) => Home()), (route) => false);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Home(
+                      keyLogin: value.user!.uid.toString(),
+                    )),
+            (route) => false);
       }
     });
   }

@@ -1,17 +1,20 @@
+import 'package:async/async.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:medical_app/detail_logic/medical_class.dart';
 
 class Patien {
   String? name = 'None';
+  String? keyLogin = "None";
   int? old = -1;
   String? gender = "unknow";
   String? address;
   String? regimen = "None";
   String? nameDisease = "None";
-  int? veryfileID;
+  String? veryfileID;
   String? phoneNum = '';
   String? birthday = '';
-  bool selected = false;
+
   Object objRegimen = Medical();
 
   // get set for birthday
@@ -30,9 +33,6 @@ class Patien {
   get getRegimen => this.regimen;
   set setRegimen(regimen) => this.regimen = regimen;
 
-  void setSelected() => this.selected = !this.selected;
-
-  get getSelected => this.selected;
   // Contructor getter and setter name
   get getName => this.name;
   set _setName(name) => this.name = name;
@@ -47,7 +47,7 @@ class Patien {
 
   // get and set ID
   get getID => this.veryfileID;
-  set _setID(ID) => this.veryfileID = ID;
+  set setID(String ID) => this.veryfileID = ID;
 
   void setRegimenObject() {
     if (this.regimen == 'Nuôi dưỡng đường tĩnh mạch') {
@@ -56,10 +56,61 @@ class Patien {
     } else if (this.regimen == 'Điều trị đau vai gáy') {}
   }
 
-  void saveDataPateint() {
-    if (this.objRegimen is Medical) {
-      (this.objRegimen as Medical).saveData('Medical/${this.getID}');
+  // save data patient
+  Future<void> saveDataPatient(String keyLogin, bool flagSaveMeical) async {
+    if (this.keyLogin == "None") {
+      this.keyLogin = keyLogin;
     }
+    final reference =
+        FirebaseDatabase.instance.ref('${keyLogin}/Users/${this.getID}');
+    await reference.set({
+      "name": this.name,
+      "old": this.old,
+      "gender": this.gender,
+      "address": this.address,
+      "regimen": this.regimen,
+      "veryfileID": this.veryfileID,
+      "nameDisease": this.nameDisease,
+      "phoneNum": this.phoneNum,
+      "birthday": this.birthday,
+      "keyLogin": this.keyLogin
+    });
+    if (this.objRegimen is Medical && flagSaveMeical) {
+      (this.objRegimen as Medical)
+          .saveData('${keyLogin}/Users/${this.getID}/Medical');
+    }
+  }
+
+  // read Data from realTime
+  // AsyncMemoizer<String> memCache = AsyncMemoizer();
+  // Read data from RealTime Database
+  Future<String> readDataRealTimeDB(String s) async {
+    // return memCache.runOnce(() async {
+    final refer = FirebaseDatabase.instance.ref();
+    // await refer.child(s).onValue.listen((event) {}
+    final snapshot = await refer.child(s).get();
+    if (snapshot.exists) {
+      var value = Map<String, dynamic>.from(snapshot.value as Map);
+
+      // get value from firebase
+      this.name = value["name"];
+      this.old = value["old"];
+      this.gender = value["gender"];
+      this.address = value["address"];
+      this.regimen = value["regimen"];
+      this.veryfileID = value["veryfileID"];
+      this.nameDisease = value["nameDisease"];
+      this.phoneNum = value["phoneNum"];
+      this.birthday = value["birthday"];
+      this.keyLogin = value["keyLogin"];
+      if (value["Medical"] != null) {
+        if (objRegimen is Medical) {
+          (objRegimen as Medical).readDataRealTimeDB("${s}/Medical");
+        }
+      }
+    }
+    return "done";
+    // });
   }
 
   // Contructor patien
@@ -68,5 +119,5 @@ class Patien {
       this.old,
       this.address,
       @required this.veryfileID,
-      @required this.regimen});
+      @required this.regimen = "Nuôi dưỡng đường tĩnh mạch"});
 }

@@ -1,50 +1,148 @@
+import 'package:async/async.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'patient.dart';
 
 class Manager {
   static final Manager _singleton = Manager._internal();
 
-  factory Manager() {
+  factory Manager({required String key}) {
+    _singleton.keyLogin = key;
     return _singleton;
   }
 
   Manager._internal();
 
-  List<Patien>? patients = [];
+  List<String> listInfomation = [];
+  List<bool> listSelected = [];
 
-  void addPainet(Patien patien) => patients?.add(patien);
+  // login account
+  String? keyLogin = "none";
 
-  bool isEmpty(int i) => patients![i] == Null;
+  // add patient to list Object Patien
+  void addPatient(
+      String iD, String name, String regimen, bool saveMedicalFlag) {
+    Patien patien = Patien(name: name, veryfileID: iD, regimen: regimen);
+    patien.saveDataPatient(this.keyLogin!, saveMedicalFlag);
+  }
 
-  Patien getPainent(int i) => !isEmpty(i) ? patients![i] : patients![0];
+  // add list infomation
+  void addListInformation(String iD, String namePatient) {
+    this.listInfomation.add("${iD}_(${namePatient})");
+    this.listSelected.add(false);
+  }
 
-  void removePainet(int ID) {
-    for (var i = 0; i < patients!.length; i++) {
-      if (patients![i].getID == ID) patients!.removeAt(i);
+  // print listInfo
+  void printListInfo() {
+    for (var i = 0; i < listInfomation.length; i++) {
+      print(listInfomation[i]);
     }
   }
 
-  void setSelect(int i) => patients![i].setSelected();
+  // get Name pateint index
+  String getNameInfoPatientIndex(int i) {
+    List<String> listemp = this.listInfomation[i].split("_");
+    return listemp[1].substring(1, listemp[1].length - 1);
+  }
 
-  // get set list patien
-  List<Patien>? getList() => this.patients;
-  void setList(List<Patien> listName) => this.patients = listName;
+  // get iD pateint index
+  String getIdPatientIndex(int i) {
+    print("id= ${this.listInfomation[i].substring(0, 12)}");
+    return this.listInfomation[i].substring(0, 12);
+  }
+
+  Future<void> upSeverListInfo() async {
+    final reference = FirebaseDatabase.instance.ref('${keyLogin}');
+    await reference.update({
+      "listInfo": this.listInfomation,
+      "listSelected": this.listSelected,
+    });
+  }
+
+  Future<void> upSeverListSelected() async {
+    final reference = FirebaseDatabase.instance.ref('${keyLogin}');
+    await reference.update({
+      "listSelected": this.listSelected,
+    });
+  }
+
+  bool isEmpty(int i) => listInfomation[i] == Null;
+
+  // Patien getPainent(int i) => !isEmpty(i) ? listInfomation[i] : listInfomation[0];
+
+  // void removePainet(int ID) {
+  //   for (var i = 0; i < listInfomation.length; i++) {
+  //     if (listInfomation[i].getID == ID) listInfomation.removeAt(i);
+  //   }
+  // }
+
+  void setListInforDefault() {
+    this.listInfomation = [];
+    this.listSelected = [];
+  }
+
+  void setSelect(int i) => listSelected[i] = !listSelected[i];
+
   // thay đổi màu item ListTile đc chọn
   void setSelecteDefaut() {
     for (var i = 0; i < this.size(); i++) {
-      if (patients![i].selected == true) {
+      if (listSelected[i] == true) {
         this.setSelect(i);
         break;
       }
     }
   }
 
-  bool checkIDExistID(int value) {
+  bool checkIDExistID(String value) {
     for (var i = 0; i < size(); i++) {
-      if (value == patients![i].getID) return true;
+      if (value == this.getIdPatientIndex(i)) return true;
     }
     return false;
   }
 
-  int size() => patients!.length;
+  int size() => listInfomation.length;
+
+  // read listInfomation from Database RealTimeDB
+  // Future<String> readDataRealTimeDBManager() async {
+  //   final refer = FirebaseDatabase.instance.ref();
+  //   // await refer.child(s).onValue.listen((event) {}
+  //   final snapshot = await refer.child(this.keyLogin!.toString()).get();
+  //   if (snapshot.exists) {
+  //     var value = Map<String, dynamic>.from(snapshot.value as Map);
+  //     if (value["listInfo"] != null) {
+  //       this.listInfomation = (value["listInfo"] as List<dynamic>)
+  //           .map((e) => e.toString())
+  //           .toList();
+  //       this.listSelected = (value["listSelected"] as List<dynamic>)
+  //           .map((e) => (e as bool))
+  //           .toList();
+  //     } else {
+  //       print("listInfo was Null");
+  //     }
+  //   }
+  //   return "done";
+  // }
+
+  AsyncMemoizer<String> memCache = AsyncMemoizer();
+  Future<String> readDataRealTimeDBManager() async {
+    return memCache.runOnce(() async {
+      final refer = FirebaseDatabase.instance.ref();
+      // await refer.child(s).onValue.listen((event) {}
+      final snapshot = await refer.child(this.keyLogin!.toString()).get();
+      if (snapshot.exists) {
+        var value = Map<String, dynamic>.from(snapshot.value as Map);
+        if (value["listInfo"] != null) {
+          this.listInfomation = (value["listInfo"] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList();
+          this.listSelected = (value["listSelected"] as List<dynamic>)
+              .map((e) => (e as bool))
+              .toList();
+        } else {
+          print("listInfo was Null");
+        }
+      }
+      return "done";
+    });
+  }
 }

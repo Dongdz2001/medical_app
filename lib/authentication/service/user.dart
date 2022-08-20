@@ -12,7 +12,11 @@ class UserManagement {
         .doc(firebaseUser!.uid)
         .set({'email': user.email, 'uid': user.uid})
         .then((value) => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Home())))
+            context,
+            MaterialPageRoute(
+                builder: (context) => Home(
+                      keyLogin: user.user!.uid.toString(),
+                    ))))
         .catchError((e) {
           // ignore: avoid_print
           print(e);

@@ -51,15 +51,14 @@ class _ProfileInfoState extends State<ProfileInfo> {
                     : genderController.text;
                 patienTemp.birthday = dateController.text;
                 try {
-                  patienTemp.veryfileID =
-                      int.parse(identityCardControler.text.toString());
+                  patienTemp.veryfileID = identityCardControler.text.toString();
                 } catch (e) {
                   print('casting error');
                 }
                 patienTemp.phoneNum = phoneController.text;
                 patienTemp.nameDisease = diseaseControler.text;
                 patienTemp.old = _caculateOld(dateController.text);
-
+                patienTemp.saveDataPatient(patienTemp.keyLogin!, false);
                 Navigator.pop(context, true);
               },
             ),

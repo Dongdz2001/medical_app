@@ -31,28 +31,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Text('Thông tin chi tiết:'),
             Expanded(
               child: ListView.builder(
-                itemCount: widget.medical.getCountInject(),
+                itemCount: widget.medical.lengthListHistoryInjection(),
                 itemBuilder: (context, index) {
-                  return SizedBox(
-                    height: heightDevideMethod(0.04),
-                    child: ListTile(
-                      title: Text(
-                        'Lần tiêm ${index + 1} : ${widget.medical.getItemListResultInjection(index)} - ${widget.medical.getCheckGlucozoIndex(index) ? "Đạt mục tiêu" : "  Không đạt"} ',
-                        style: Theme.of(context).textTheme.headline2,
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(index == widget.medical.getCountInject() - 1
-                            ? Icons.restore
-                            : Icons.info_outline_rounded),
-                        tooltip: widget.medical.getTimeInjectItemList(index),
-                        onPressed: () {
-                          setState(() {
-                            index == widget.medical.getCountInject() - 1
-                                ? widget.medical.RemoveLastItemInjection()
-                                : null;
-                          });
-                        },
-                      ),
+                  return Container(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text(
+                      ((widget.medical.listHistoryInjection[index] != -1) &&
+                              (widget.medical.listHistoryInjection[index] !=
+                                  -2) &&
+                              (widget.medical.listHistoryInjection[index] !=
+                                  -3))
+                          ? "${widget.medical.listHistoryTimeInjection[index]} : glucose ${widget.medical.listHistoryInjection[index]} (mol/l) \n ${widget.medical.listOldSolveHistory[index]}  --------------------------------------------------------- " //${widget.medical.getCheckGlucozoIndex(index) ? " mục tiêu " : " Không đạt "}
+                          : "${widget.medical.listHistoryTimeInjection[index]} : \n ",
+                      style: Theme.of(context).textTheme.headline2,
                     ),
                   );
                 },

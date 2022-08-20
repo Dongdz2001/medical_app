@@ -110,6 +110,9 @@ class _LoginState extends State<Login> {
                               fontSize: 15,
                             ),
                           ),
+                          onSubmitted: (value) {
+                            _email.text = value;
+                          },
                         ),
                       ),
                       // enter password
@@ -150,6 +153,9 @@ class _LoginState extends State<Login> {
                               },
                             ),
                           ),
+                          onSubmitted: (value) {
+                            _password.text = value;
+                          },
                         ),
                       ),
                       // button login
@@ -206,6 +212,7 @@ class _LoginState extends State<Login> {
                             InkWell(
                               child: Row(
                                 children: const <Widget>[
+                                  Icon(Icons.lock),
                                   Text(
                                     "forgot password",
                                     style: TextStyle(
@@ -213,11 +220,10 @@ class _LoginState extends State<Login> {
                                         color: Color.fromARGB(255, 3, 42, 75),
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  Icon(Icons.lock_open_outlined),
                                 ],
                               ),
                               onTap: () {
-                                Navigator.push(
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => const LoginSc()),
@@ -259,12 +265,16 @@ class _LoginState extends State<Login> {
         .signInWithEmailAndPassword(
             email: _email.text, password: _password.text)
         .then(
-          (user) => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => Home()),
-              (route) => false),
-        )
-        .catchError((e) {
+      (user) {
+        print("uid = ${user.user!.uid.toString()}");
+        return Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Home(
+                      keyLogin: user.user!.uid.toString(),
+                    )));
+      },
+    ).catchError((e) {
       _password.text = '';
       password_current = '';
       print("ERRORS: $e");
