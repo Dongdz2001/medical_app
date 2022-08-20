@@ -64,25 +64,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.paused &&
         medicalObject.flagRestart == false) {
-      // final reference = FirebaseDatabase.instance.ref("Medicals/medical");
-      // await reference.set({
-      //   "namePD": medicalObject.getNamePD,
-      //   "initialStateBool": medicalObject.getInitialStateBool,
-      //   "lastStateBool": medicalObject.getLastStateBool,
-      //   "listResultInjection": medicalObject.getListResultInjection,
-      //   "listTimeResultInjection": medicalObject.getListTimeResultInjection,
-      //   "isVisibleGlucozo": medicalObject.isVisibleGlucozo,
-      //   "isVisibleYesNoo": medicalObject.isVisibleYesNoo,
-      //   "countUsedSolve": medicalObject.getCountUsedSolve,
-      //   "timeStart": medicalObject.getTimeStart.toString(),
-      //   "sloveFailedContext": medicalObject.getSloveFailedContext,
-      //   "yInsu22H": medicalObject.getYInsu22H,
-      //   "oldDisplayContent": medicalObject.oldDisplayContent,
-      //   "flagRestart": medicalObject.flagRestart,
-      //   //  "address": {"line1": "100 Mountain View"}
-      // });
-    }
-    if (state != AppLifecycleState.detached) {
       medicalObject.saveData(
           "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
     }
