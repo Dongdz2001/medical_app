@@ -43,6 +43,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     // TODO: implement initState
     WidgetsBinding.instance.addObserver(this);
     keyLogin = widget.keyLogin!;
+    print("keycurrent =  ${keyLogin}");
     manager = Manager(key: keyLogin);
     super.initState();
   }
@@ -76,53 +77,54 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xff091a31),
-          actions: [
-            PopupMenuButton(
-                icon: const Icon(Icons.menu),
-                itemBuilder: (context) => [
-                      PopupMenuItem(
-                        child: InkWell(
-                          child: const Text("Profile"),
-                          onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //       builder: (context) => const FormScreen()),
-                            // );
-                            // ;
-                          },
+            backgroundColor: const Color(0xff091a31),
+            actions: [
+              PopupMenuButton(
+                  icon: const Icon(Icons.menu),
+                  itemBuilder: (context) => [
+                        PopupMenuItem(
+                          child: InkWell(
+                            child: const Text("Profile"),
+                            onTap: () {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //       builder: (context) => const FormScreen()),
+                              // );
+                              // ;
+                            },
+                          ),
                         ),
-                      ),
-                    ]),
-          ],
-          // Mũi tên quay lại màn hình chính
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  // Navigator.pushReplacement(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => Login()),
-                  // );
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: context), (route) => Login());
-                },
-                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-              );
-            },
-          ),
-          // centerTitle: true,
-          // title: Container(
-          //   width: 45,
-          //   height: 45,
-          //   child: const Icon(Icons.person),
-          //   decoration: const BoxDecoration(
-          //       shape: BoxShape.circle, color: Colors.white24),
-          // ),
-        ),
+                      ]),
+            ],
+            // Mũi tên quay lại màn hình chính
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                // Navigator.pushReplacement(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => Login()),
+                // );
+                keyLogin = "";
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => Login()),
+                    (Route<dynamic> route) => false);
+              },
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            )
+
+            // centerTitle: true,
+            // title: Container(
+            //   width: 45,
+            //   height: 45,
+            //   child: const Icon(Icons.person),
+            //   decoration: const BoxDecoration(
+            //       shape: BoxShape.circle, color: Colors.white24),
+            // ),
+            ),
         // List hiển thị tên bệnh nhân và phác đồ
         body: FutureBuilder(
             future: manager.readDataRealTimeDBManager(),

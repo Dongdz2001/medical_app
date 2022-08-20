@@ -113,8 +113,7 @@ class _SignUpState extends State<SignUp> {
                             .createUserWithEmailAndPassword(
                                 email: _email.text, password: _password.text)
                             .then((signedInUser) {
-                          UserManagement()
-                              .storeNewUser(signedInUser.user, context);
+                          UserManagement().storeNewUser(signedInUser, context);
                         }).catchError((e) {
                           print(e);
                         });

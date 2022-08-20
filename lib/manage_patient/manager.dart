@@ -123,26 +123,29 @@ class Manager {
   //   return "done";
   // }
 
-  AsyncMemoizer<String> memCache = AsyncMemoizer();
+  // AsyncMemoizer<String> memCache = AsyncMemoizer();
   Future<String> readDataRealTimeDBManager() async {
-    return memCache.runOnce(() async {
-      final refer = FirebaseDatabase.instance.ref();
-      // await refer.child(s).onValue.listen((event) {}
-      final snapshot = await refer.child(this.keyLogin!.toString()).get();
-      if (snapshot.exists) {
-        var value = Map<String, dynamic>.from(snapshot.value as Map);
-        if (value["listInfo"] != null) {
-          this.listInfomation = (value["listInfo"] as List<dynamic>)
-              .map((e) => e.toString())
-              .toList();
-          this.listSelected = (value["listSelected"] as List<dynamic>)
-              .map((e) => (e as bool))
-              .toList();
-        } else {
-          print("listInfo was Null");
-        }
+    // return memCache.runOnce(() async {
+    final refer = FirebaseDatabase.instance.ref();
+    // await refer.child(s).onValue.listen((event) {}
+    final snapshot = await refer.child(this.keyLogin!.toString()).get();
+    if (snapshot.exists) {
+      var value = Map<String, dynamic>.from(snapshot.value as Map);
+      if (value["listInfo"] != null) {
+        this.listInfomation = (value["listInfo"] as List<dynamic>)
+            .map((e) => e.toString())
+            .toList();
+        this.listSelected = (value["listSelected"] as List<dynamic>)
+            .map((e) => (e as bool))
+            .toList();
+      } else {
+        print("listInfo was Null");
       }
-      return "done";
-    });
+    } else {
+      this.listInfomation = [];
+      this.listSelected = [];
+    }
+    return "done";
+    // });
   }
 }

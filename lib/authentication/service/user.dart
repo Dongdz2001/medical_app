@@ -10,7 +10,7 @@ class UserManagement {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(firebaseUser!.uid)
-        .set({'email': user.email, 'uid': user.uid})
+        .set({'email': user.user.email, 'uid': user.user.uid})
         .then((value) => Navigator.push(
             context,
             MaterialPageRoute(

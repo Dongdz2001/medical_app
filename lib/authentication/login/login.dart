@@ -267,7 +267,7 @@ class _LoginState extends State<Login> {
         .then(
       (user) {
         print("uid = ${user.user!.uid.toString()}");
-        return Navigator.push(
+        return Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => Home(
