@@ -22,8 +22,12 @@ bool getCheckOpenCloseTimeStatus(String openTime, String closeTime) {
   } else if (nowHour == openHour && nowHour == closeHour) {
     if (nowMin >= openMin && nowMin <= closeMin) return true;
     return false;
-  } else if (nowHour == openHour || nowHour == closeHour) {
-    if (nowMin >= openMin || nowMin <= closeMin) return true;
+  } else if (nowHour == openHour) {
+    if (nowMin >= openMin) return true;
+    return false;
+  } else if (nowHour == closeHour) {
+    if (nowMin <= closeMin) return true;
+    return false;
   }
 
   return false;
