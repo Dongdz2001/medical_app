@@ -234,7 +234,6 @@ class Medical {
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
     this.timeNextCurrentValid();
-    print("time == ${this.timeNext}");
 
     //  dừng phác đô lại
     this.checkBreak = false;
@@ -458,7 +457,6 @@ class Medical {
             ? this.content_display = "Bạn có đang tiêm Insulin không :  "
             : this.content_display = value["content_display"];
         // default timeNext
-        this.timeNextCurrentValid();
       }
       return "done";
     });
@@ -561,7 +559,7 @@ class Medical {
 
   // check TimeNext in a day
   bool checkTimeNext() {
-    print("timeNext ${this.timeNext}");
+    print("checkTimeNext ${this.timeNext}");
     List<String> listTimeTemp = this.timeNext.split('_');
     if (getCheckOpenCloseTimeStatus(listTimeTemp[0], listTimeTemp[1]))
       return true;

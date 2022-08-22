@@ -49,7 +49,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     reference = FirebaseDatabase.instance.ref(
         "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
     WidgetsBinding.instance.addObserver(this);
-    medicalObject.timeNextCurrentValid();
   }
 
   // sava data when close app
@@ -331,6 +330,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                     ],
                                                     onToggle: (index) {
                                                       medicalObject
+                                                          .timeNextCurrentValid();
+                                                      medicalObject
                                                           .flagRestart = false;
                                                       medicalObject
                                                               .setTimeStart =
@@ -399,6 +400,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                               visible: medicalObject.isVisibleButtonNext,
                               child: ElevatedButton(
                                   onPressed: () {
+                                    print(
+                                        "timeNext == ${medicalObject.timeNext}");
                                     //  update time TimeNextDay  trước khi tiến hành
                                     if (medicalObject
                                         .checkSmallerTimeNextDay()) {
@@ -409,7 +412,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                     }
                                     if (medicalObject.checkTimeNextDay()) {
                                       if (medicalObject
-                                          .checkValidMeasuringTimeFocus()) {
+                                              .checkValidMeasuringTimeFocus() &&
+                                          medicalObject.checkTimeNext()) {
                                         if (!medicalObject
                                             .checkCurrentGlucose) {
                                           if (!medicalObject.checkDoneTask) {
