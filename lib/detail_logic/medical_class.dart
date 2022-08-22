@@ -40,7 +40,7 @@ class Medical {
   get getYInsu22H => this.yInsu22H;
   void setYInsu22H(double value1) => this.yInsu22H = """ 
 - Tiêm dưới da insulin tác dụng chậm :
-    + Tiêm dưới da: ${num.parse((this._lastStateBool ? (value1 * 0.2 + 2) : (value1 * 0.2)).toStringAsFixed(4))} UI
+    + Tiêm dưới da: ${num.parse((this._lastStateBool ? (value1 * 0.2 + 2) : (value1 * 0.2)).toStringAsFixed(0))} UI
     + Loại Insulin: Lantus
 """;
 
