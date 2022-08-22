@@ -64,7 +64,6 @@ class _ProfileInfoState extends State<ProfileInfo> {
                 patienTemp.nameDisease = diseaseControler.text;
                 patienTemp.old = _caculateOld(dateController.text);
                 patienTemp.saveDataPatient(patienTemp.keyLogin!, false);
-
                 Manager(key: patienTemp.keyLogin!)
                     .upDateNameIndexListInfo(index, patienTemp.name!);
 

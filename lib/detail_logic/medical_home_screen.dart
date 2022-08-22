@@ -55,7 +55,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   // sava data when close app
   @override
   void dispose() {
-    medicalObject.saveData("${patien.keyLogin}/Users/${patien.getID}/Medical");
+    if (medicalObject.flagRestart == false) {
+      medicalObject
+          .saveData("${patien.keyLogin}/Users/${patien.getID}/Medical");
+    }
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
   }
@@ -78,8 +81,9 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
             backgroundColor: Color(0xff091a31),
             leading: IconButton(
               onPressed: () {
-                medicalObject.saveData(
-                    "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
+                if (medicalObject.flagRestart == false)
+                  medicalObject.saveData(
+                      "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
                 Navigator.pop(context, true);
               },
               icon: const BackButtonIcon(),
@@ -350,8 +354,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                                   : false;
                                                           if (medicalObject
                                                               .checkValidMeasuringTimeFocus()) {
-                                                            print(
-                                                                "here jump neff! ${medicalObject.checkValidMeasuringTimeFocus()} ");
                                                             medicalObject
                                                                 .setChangeVisibleGlucose(); // true
                                                             medicalObject
@@ -367,8 +369,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                               .setChangeStatus();
                                                         });
                                                       });
-                                                      medicalObject.saveData(
-                                                          "${widget.patienTemp!.keyLogin}/Users/${widget.patienTemp!.getID}/Medical");
                                                     },
                                                   ),
                                                 ),
@@ -412,8 +412,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                           .checkValidMeasuringTimeFocus()) {
                                         if (!medicalObject
                                             .checkCurrentGlucose) {
-                                          print(
-                                              "check done = ${medicalObject.checkDoneTask}");
                                           if (!medicalObject.checkDoneTask) {
                                             // chưa nhập glucose xong
                                             setState(() {
