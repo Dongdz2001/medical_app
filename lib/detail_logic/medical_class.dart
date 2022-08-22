@@ -384,6 +384,20 @@ class Medical {
     }
   }
 
+  List<double> listDouble(List<dynamic> list) {
+    List<double> listResult = [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] is String) {
+        listResult.add(double.parse(list[i]));
+      } else if (list[i] is int) {
+        listResult.add(double.parse('${list[i]}.0'));
+      } else {
+        listResult.add(list[i]);
+      }
+    }
+    return listResult;
+  }
+
   AsyncMemoizer<String> memCache = AsyncMemoizer();
   // Read data from RealTime Database
   Future<String> readDataRealTimeDB(String s) async {
@@ -408,9 +422,10 @@ class Medical {
         this.setInitialStateBool = value["initialStateBool"];
         this.setLastStateBool = value["lastStateBool"];
         this.setListResultInjection =
-            (value["listResultInjection"] as List<dynamic>)
-                .map((e) => (e as int).toDouble())
-                .toList();
+            listDouble(value["listResultInjection"] as List<dynamic>);
+        // (value["listResultInjection"] as List<dynamic>)
+        //     .map((e) => int.parse(e).toDouble())
+        //     .toList();
         this.setListTimeResultInjection =
             (value["listTimeResultInjection"] as List<dynamic>)
                 .map((e) => e.toString())
@@ -422,9 +437,10 @@ class Medical {
         this.flagRestart = value["flagRestart"] ?? false;
         if (value["listHistoryInjection"] != null) {
           this.listHistoryInjection =
-              (value["listHistoryInjection"] as List<dynamic>)
-                  .map((e) => (e as int).toDouble())
-                  .toList();
+              listDouble(value["listHistoryInjection"] as List<dynamic>);
+          // (value["listHistoryInjection"] as List<dynamic>)
+          //     .map((e) => int.parse(e).toDouble())
+          //     .toList();
           this.listHistoryTimeInjection =
               (value["listHistoryTimeInjection"] as List<dynamic>)
                   .map((e) => e.toString())
