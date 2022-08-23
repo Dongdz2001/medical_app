@@ -452,13 +452,20 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                               gravity: Toast.bottom);
                                         }
                                       } else {
-                                        medicalObject.checkDoneTask = false;
-                                        showToast("Chưa đến giờ đo",
-                                            duration: 3, gravity: Toast.bottom);
+                                        setState(() {
+                                          medicalObject.checkDoneTask = true;
+                                          medicalObject.setChangeStatus();
+                                          medicalObject.checkDoneTask = false;
+
+                                          showToast("Chưa đến giờ đo hihiiaaaa",
+                                              duration: 3,
+                                              gravity: Toast.bottom);
+                                        });
                                       }
                                       if (medicalObject.getContentdisplay !=
-                                          medicalObject
-                                              .delaySolution1DayAt22h) {
+                                              medicalObject
+                                                  .delaySolution1DayAt22h &&
+                                          medicalObject.checkTimeNext()) {
                                         setState(() {
                                           medicalObject.setChangeStatus();
                                         });
