@@ -457,7 +457,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                           medicalObject.setChangeStatus();
                                           medicalObject.checkDoneTask = false;
 
-                                          showToast("Chưa đến giờ đo hihiiaaaa",
+                                          showToast("Chưa đến giờ đo ",
                                               duration: 3,
                                               gravity: Toast.bottom);
                                         });
