@@ -1,9 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import '../service/user.dart';
+import 'package:medical_app/home/home_screen_main_login.dart';
+import 'package:medical_app/sizeDevide.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../manage_patient/manager.dart';
 import 'login.dart';
 
 class SignUp extends StatefulWidget {
@@ -14,6 +18,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  final TextEditingController _nameUserController = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   String? _confirm;
@@ -56,14 +61,28 @@ class _SignUpState extends State<SignUp> {
               ),
               TextField(
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  hintText: 'Enter your email',
+                  prefixIcon: const Icon(Icons.person),
+                  hintText: 'Họ tên của bạn ?',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(22.0)),
                 ),
                 onChanged: (value) => setState(() {
-                  _email.text = value;
+                  _nameUserController.text = value;
                 }),
+              ),
+              Container(
+                padding: const EdgeInsets.only(top: 10),
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    hintText: 'Email của bạn ?',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(22.0)),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _email.text = value;
+                  }),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.only(top: 10),
@@ -71,7 +90,7 @@ class _SignUpState extends State<SignUp> {
                   obscureText: true,
                   decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock_outline),
-                      hintText: 'Enter password',
+                      hintText: 'Nhập mật khẩu',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(22.0))),
                   onChanged: (value) => setState(() {
@@ -85,52 +104,109 @@ class _SignUpState extends State<SignUp> {
                   obscureText: true,
                   decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.confirmation_num_rounded),
-                      hintText: 'Confirm password',
+                      hintText: 'Nhập lại mật khẩu',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(22),
                           borderSide: const BorderSide(
                               color: Colors.black, width: 2.0))),
                   onChanged: (value) => setState(() {
-                    print(value);
                     _confirm = value;
                   }),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.only(top: 30),
-                child: FlatButton(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 18, horizontal: 72),
-                    color: const Color.fromARGB(255, 48, 81, 245),
-                    textColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32.0)),
-                    onPressed: () async {
-                      if (_confirm == _password.text) {
-                        showToast(
-                            "successful, please wait a few seconds ...", 2);
-                        await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                                email: _email.text, password: _password.text)
-                            .then((signedInUser) {
-                          UserManagement().storeNewUser(signedInUser, context);
-                        }).catchError((e) {
-                          print(e);
-                        });
-                      } else {
-                        showToast("Password doesn't match !", 1);
-                      }
-                    },
-                    child: const Text(
-                      'SIGN UP',
-                      style: TextStyle(fontSize: 18.0),
-                    )),
+                child: Container(
+                  width: widthDevideMethod(1),
+                  height: heightDevideMethod(0.118),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 18, horizontal: 72),
+                  // color: const Color.fromARGB(255, 48, 81, 245),
+                  child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              const Color.fromARGB(255, 48, 81, 245)),
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32.0),
+                                side: BorderSide(
+                                    color: Color.fromARGB(255, 55, 59, 89))),
+                          )),
+                      onPressed: () async {
+                        SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        if (_confirm == _password.text &&
+                            _nameUserController.text != '') {
+                          await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                                  email: _email.text, password: _password.text)
+                              .then((signedInUser) async {
+                            showToast(
+                                "Tạo tài khoản thành công, \n vui lòng chờ trong giây lát...",
+                                2);
+
+                            CollectionReference users = await FirebaseFirestore
+                                .instance
+                                .collection('listPasswordOfUsers');
+
+                            users
+                                .doc(_email.text)
+                                .set({
+                                  'password': _password.text,
+                                  'nameUser': _nameUserController.text,
+                                })
+                                .then((value) => print("User Added"))
+                                .catchError((error) =>
+                                    print("Failed to add user: $error"));
+
+                            await prefs.setString(
+                                'keyLocalLogin', signedInUser.user!.uid);
+
+                            Manager(key: signedInUser.user!.uid).nameUser =
+                                this._nameUserController.text;
+                            Manager(key: signedInUser.user!.uid).nameEmailUser =
+                                signedInUser.user!.email ??
+                                    'nonenone@gmail.com';
+                            Manager(key: signedInUser.user!.uid).keyLogin =
+                                signedInUser.user!.uid;
+                            await Manager(key: signedInUser.user!.uid)
+                                .saveNameUser(this._nameUserController.text);
+                            await Manager(key: signedInUser.user!.uid)
+                                .saveNameEmailUser(this._email.text);
+
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomeScreenMainLogin(
+                                          keyLogin: signedInUser.user!.uid,
+                                        )));
+                          }).catchError((e) {
+                            if (e.toString().indexOf('connection') != -1) {
+                              showToast("Không có kết nối internet", 2);
+                            } else {
+                              showToast("Tài khoản đã tồn tại", 2);
+                            }
+                          });
+                        } else {
+                          if (_confirm != _password.text) {
+                            showToast("Mật khẩu không trùng khớp", 2);
+                          } else {
+                            showToast("Tên không được để trống", 2);
+                          }
+                        }
+                      },
+                      child: const Text(
+                        'Đăng ký',
+                        style: TextStyle(fontSize: 18.0),
+                      )),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.only(top: 20),
                 alignment: Alignment.bottomLeft,
                 child: SizedBox(
-                  width: 100,
+                  width: 130,
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
@@ -144,7 +220,7 @@ class _SignUpState extends State<SignUp> {
                         const Icon(Icons.login_outlined),
                         InkWell(
                             child: const Text(
-                              "Sign in",
+                              "Đăng nhập",
                               style: TextStyle(
                                 color: Color.fromARGB(255, 52, 50, 50),
                                 fontSize: 18,
@@ -152,10 +228,12 @@ class _SignUpState extends State<SignUp> {
                               ),
                             ),
                             onTap: () {
-                              Navigator.push(
+                              Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => Login()));
+                                      builder: (BuildContext context) =>
+                                          Login()),
+                                  ModalRoute.withName('/signup'));
                             }),
                       ],
                     ),
@@ -175,7 +253,7 @@ class _SignUpState extends State<SignUp> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: time,
-        backgroundColor: const Color.fromARGB(255, 51, 123, 230),
+        backgroundColor: const Color(0xff091a31),
         textColor: Colors.white,
         fontSize: 16.0);
   }

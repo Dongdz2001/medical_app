@@ -47,10 +47,32 @@ dependencies:
   pinput: ^2.2.12
   cloud_firestore: ^3.4.3
   flutter_spinkit: ^5.1.0
+  bottom_sheet: ^3.1.1
+  roundcheckbox: ^2.0.5
+  photo_view: ^0.14.0
+  shared_preferences: ^2.0.15
+  syncfusion_flutter_charts: ^20.2.50
+  flutter_launcher_icons: ^0.10.0
+  group_radio_button: ^1.2.0
+  persistent_bottom_nav_bar: any
+  link_text: ^0.2.0
+  nice_buttons: ^0.0.2
+  flutter_switch: ^0.3.2
+  email_auth: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.10.0"
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/ic_logo.png"
+  min_sdk_android: 16  # android min sdk min:16, default 21
+
+
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -76,6 +98,11 @@ flutter:
     - assets/doctor.jpg
     - assets/bbchat1.png
     - assets/images/
+    - assets/
+    - assets/itemImage/
+    - assets/images/forgotPassword.png
+    - assets/TPN/
+    - assets/itemImage/hospitalback.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

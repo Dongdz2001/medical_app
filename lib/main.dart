@@ -1,8 +1,13 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:medical_app/authentication/login/login.dart';
-import 'package:medical_app/detail_logic/medical_home_screen.dart';
-import 'package:medical_app/detail_logic/sizeDevide.dart';
+import 'package:medical_app/home/home_screen_main_login.dart';
+import 'package:medical_app/sizeDevide.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'manage_patient/manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Flutter app',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -36,13 +41,20 @@ class MyApp extends StatelessWidget {
           bodyText2: TextStyle(fontSize: 20.0, fontFamily: 'Hind'),
         ),
       ),
-      home: const MyHomePage(title: 'Medicial Home'),
+      home: const SplashScreen(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  final String keyLocalLogin;
+  final String keyCodeLocal;
+  const MyHomePage(
+      {Key? key,
+      required this.title,
+      required this.keyLocalLogin,
+      required this.keyCodeLocal})
+      : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -60,6 +72,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String keyLocalLogin = "";
+  String keyCodeLocal = "";
+  late Future<String> _fetchData;
+
+  @override
+  void initState() {
+    _fetchData = getData();
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     widthDevide = MediaQuery.of(context).size.width;
@@ -70,6 +93,107 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Login();
+    return FutureBuilder(
+        future: _fetchData,
+        builder: (context, snapshot) {
+          Widget children;
+          children = keyLocalLogin == ""
+              ? Login()
+              : HomeScreenMainLogin(
+                  keyLogin: keyLocalLogin,
+                  keyCode: keyCodeLocal,
+                );
+          return Container(
+            child: children,
+          );
+        });
+  }
+
+  Future<String> getData() async {
+    keyLocalLogin = this.widget.keyLocalLogin;
+
+    if (keyLocalLogin != "") {
+      await Manager(key: keyLocalLogin).readNameUser();
+      await Manager(key: keyLocalLogin).readNameEmailUser();
+      keyCodeLocal = this.widget.keyCodeLocal;
+      if (keyCodeLocal != "") {
+        // String keyLoginCreatorTemp = '';
+        await FirebaseFirestore.instance
+            .collection(keyCodeLocal)
+            .doc('informationGroup')
+            .get()
+            .then((DocumentSnapshot value) async {
+          Manager(key: keyLocalLogin).nameGroupJoin =
+              await value['name_group'] ?? 'none';
+        });
+        // keyLoginCreatorTemp = value['keylogin_of_creator'] ?? 'error keylocal';
+        // print("nameGroupCreator: ${value['keylogin_of_creator']}");
+        Manager(key: keyLocalLogin).keyCodeGroup = keyCodeLocal;
+        // await Manager(key: keyLocalLogin).readDataFireStoreDBManager();
+      }
+    }
+    return "done";
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Timer(const Duration(seconds: 3), () async {
+      String keyLocalLogin = "";
+      String keyCodeLocal = "";
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      keyLocalLogin = await prefs.getString('keyLocalLogin') ?? "";
+      if (keyLocalLogin != "") {
+        keyCodeLocal = await prefs.getString('keyCodeLocal') ?? "";
+      }
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (_) => MyHomePage(
+                title: 'Medicial Home',
+                keyCodeLocal: keyCodeLocal,
+                keyLocalLogin: keyLocalLogin,
+              )));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 77, 77, 232),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // logo here
+            Container(
+              width: 120,
+              height: 120,
+              padding: const EdgeInsets.all(15),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.fromARGB(255, 219, 228, 226),
+              ),
+              child: Image.asset('assets/images/doctor_lagre.png'),
+            ),
+            const SizedBox(
+              height: 70,
+              width: 70,
+            ),
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

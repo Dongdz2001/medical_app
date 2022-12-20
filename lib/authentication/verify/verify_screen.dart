@@ -66,31 +66,31 @@ class _VerifyScrState extends State<VerifyScr> {
                   defaultPinTheme: submittedPinTheme,
                 ),
               ),
-              Container(
-                margin: const EdgeInsets.all(10),
-                width: size.width * 0.8,
-                height: size.height * 0.06,
-                child: RaisedButton(
-                  color: Colors.green,
-                  onPressed: () async {
-                    try {
-                      await widget._auth
-                          .verifyPin(_pinPutController.text, context);
-                    } catch (e) {
-                      FocusScope.of(context).unfocus();
-                      _pinPutController.text = '';
-                      _scaffoldkey.currentState?.showSnackBar(
-                          const SnackBar(content: Text('Invalid OTP')));
-                    }
-                  },
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: const Text(
-                    "Verify",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              // Container(
+              //   margin: const EdgeInsets.all(10),
+              //   width: size.width * 0.8,
+              //   height: size.height * 0.06,
+              //   child: RaisedButton(
+              //     color: Colors.green,
+              //     onPressed: () async {
+              //       try {
+              //         await widget._auth
+              //             .verifyPin(_pinPutController.text, context);
+              //       } catch (e) {
+              //         FocusScope.of(context).unfocus();
+              //         _pinPutController.text = '';
+              //         _scaffoldkey.currentState?.showSnackBar(
+              //             const SnackBar(content: Text('Invalid OTP')));
+              //       }
+              //     },
+              //     shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(10)),
+              //     child: const Text(
+              //       "Verify",
+              //       style: TextStyle(color: Colors.white),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ));

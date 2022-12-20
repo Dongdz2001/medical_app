@@ -1,0 +1,44 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"get"
+			],
+			"problemMatcher": [],
+			"label": "flutter: flutter pub get",
+			"detail": "",
+			"group": "build"
+		},
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"upgrade"
+			],
+			"problemMatcher": [],
+			"label": "flutter: flutter pub upgrade",
+			"detail": "",
+			"group": "build"
+		},
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"build",
+				"windows"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "flutter: flutter build windows",
+			"detail": ""
+		}
+	]
+}

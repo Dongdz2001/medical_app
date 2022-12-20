@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:medical_app/authentication/login/home_screen.dart';
-import 'package:medical_app/authentication/verify/phone_home.dart';
+import 'package:medical_app/authentication/verify/forget_password.dart';
+import 'package:medical_app/home/home_screen_main_login.dart';
 import 'package:medical_app/manage_patient/manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:glucose_control/verify/phone_home.dart';
 import 'signup.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,6 +11,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:io';
 
 class Login extends StatefulWidget {
+  const Login({Key? key}) : super(key: key);
+
   @override
   _LoginState createState() => _LoginState();
 }
@@ -38,8 +41,10 @@ class _LoginState extends State<Login> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                Color.fromARGB(255, 23, 198, 99),
-                Color.fromARGB(255, 57, 195, 213)
+                Colors.blueAccent,
+                Colors.white,
+                // Color.fromARGB(255, 23, 198, 99),
+                // Color.fromARGB(255, 57, 195, 213)
               ])),
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(left: 10, right: 10, top: 50),
@@ -101,10 +106,10 @@ class _LoginState extends State<Login> {
                           ),
                           decoration: InputDecoration(
                             prefixIcon: const Icon(Icons.email_outlined),
-                            hintText: 'enter your email',
+                            hintText: 'Nhập email của bạn',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(22.0)),
-                            labelText: "User Name",
+                            labelText: "Tên Đăng Nhập",
                             labelStyle: const TextStyle(
                               color: Color.fromARGB(255, 29, 29, 29),
                               fontSize: 15,
@@ -125,10 +130,10 @@ class _LoginState extends State<Login> {
                           obscureText: _passwordVisible,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(Icons.lock_outline),
-                            hintText: 'enter your password',
+                            hintText: 'Nhập mật khẩu',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(22.0)),
-                            labelText: "Password",
+                            labelText: "Mật Khẩu",
                             labelStyle: const TextStyle(
                               color: Color.fromARGB(255, 30, 30, 30),
                               fontSize: 15,
@@ -158,7 +163,8 @@ class _LoginState extends State<Login> {
                         height: 56,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: const Color.fromARGB(255, 1, 112, 203),
+                            backgroundColor:
+                                const Color.fromARGB(255, 1, 112, 203),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -169,7 +175,7 @@ class _LoginState extends State<Login> {
                             });
                           },
                           child: const Text(
-                            "Sign in",
+                            "Đăng nhập",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -188,7 +194,7 @@ class _LoginState extends State<Login> {
                                 children: const <Widget>[
                                   Icon(Icons.app_registration_outlined),
                                   Text(
-                                    "Sign up",
+                                    "Đăng ký ",
                                     style: TextStyle(
                                         fontSize: 20,
                                         color: Color.fromARGB(255, 28, 27, 27),
@@ -197,10 +203,12 @@ class _LoginState extends State<Login> {
                                 ],
                               ),
                               onTap: () {
-                                Navigator.push(
+                                Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const SignUp()));
+                                        builder: (BuildContext context) =>
+                                            SignUp()),
+                                    ModalRoute.withName('/login'));
                               },
                             ),
                             InkWell(
@@ -208,7 +216,7 @@ class _LoginState extends State<Login> {
                                 children: const <Widget>[
                                   Icon(Icons.lock),
                                   Text(
-                                    "forgot password",
+                                    "Quên mật khẩu",
                                     style: TextStyle(
                                         fontSize: 20,
                                         color: Color.fromARGB(255, 3, 42, 75),
@@ -217,10 +225,11 @@ class _LoginState extends State<Login> {
                                 ],
                               ),
                               onTap: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const LoginSc()),
+                                      builder: (context) =>
+                                          const ForgetPassScreen()),
                                 );
                                 // );
                               },
@@ -259,14 +268,20 @@ class _LoginState extends State<Login> {
         .signInWithEmailAndPassword(
             email: _email.text, password: _password.text)
         .then(
-      (user) {
-        print("uid = ${user.user!.uid.toString()}");
-        return Navigator.pushReplacement(
+      (user) async {
+        // print("uid = ${user.user!.uid.toString()}");
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('keyLocalLogin', user.user!.uid.toString());
+        await Manager(key: user.user!.uid.toString()).readNameUser();
+        Manager(key: user.user!.uid.toString()).nameEmailUser =
+            user.user!.email! ?? "none@gmail.com";
+        return Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-                builder: (context) => Home(
+                builder: (BuildContext context) => HomeScreenMainLogin(
                       keyLogin: user.user!.uid.toString(),
-                    )));
+                    )),
+            ModalRoute.withName('/login'));
       },
     ).catchError((e) {
       _password.text = '';

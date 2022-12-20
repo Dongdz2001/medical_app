@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../login/home_screen.dart';
+import '../../home/person_home_screen.dart';
 import 'authen_service.dart';
 
 class FireBaseHelper implements AuthenService {
