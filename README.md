@@ -1,4 +1,4 @@
-# medical_app
+# Ứng dụng theo dõi chăm sóc bệnh nhân
 
 A new Flutter project.
 
